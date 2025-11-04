@@ -64,6 +64,8 @@ def validate_llm_keys(llm_keys: Dict[str, str]) -> Dict[str, str]:
         raise ValueError("llm_keys cannot be empty")
     
     validated_keys = {}
+
+    supported_providers = ", ".join(LLMProvider.get_all_providers())
     
     for provider, api_key in llm_keys.items():
         # Normalize provider name to lowercase
@@ -71,18 +73,14 @@ def validate_llm_keys(llm_keys: Dict[str, str]) -> Dict[str, str]:
         
         # Validate provider is supported
         if not LLMProvider.is_valid_provider(provider_normalized):
-            supported = ", ".join(LLMProvider.get_all_providers())
             raise ValueError(
                 f"Unsupported LLM provider: '{provider}'. "
-                f"Supported providers: {supported}"
+                f"Supported providers: {supported_providers}"
             )
         
         # Validate API key format
         if not isinstance(api_key, str) or not api_key.strip():
             raise ValueError(f"API key for provider '{provider}' must be a non-empty string")
-        
-        # Basic format validation for known providers
-        _validate_key_format(provider_normalized, api_key.strip())
         
         validated_keys[provider_normalized] = api_key.strip()
     

@@ -10,6 +10,7 @@ from .session import BrowserSession
 from .auth import AuthMode
 from .providers import LLMProvider
 from .encryption import LLMKeyEncryption
+from .utils import load_llm_credentials
 
 __version__ = "0.1.0"
 __all__ = [
@@ -17,6 +18,7 @@ __all__ = [
     "BrowserSession", 
     "AuthMode",
     "LLMProvider",
-    "LLMKeyEncryption"
+    "LLMKeyEncryption",
+    "load_llm_credentials"
 ]
 

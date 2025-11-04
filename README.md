@@ -69,6 +69,12 @@ session.close()
 python demo.py
 ```
 
+**Using .env for LLM Keys (Recommended):**
+```bash
+# Copy the example file and add your credentials
+cp .env.example .env
+
+```
 ## Usage Examples
 
 ### Navigation & Interaction

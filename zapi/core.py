@@ -22,7 +22,8 @@ class ZAPI:
         self, 
         client_id: str,
         secret: str,
-        llm_keys: Optional[Dict[str, str]] = None
+        llm_provider: Optional[str] = None,
+        llm_api_key: Optional[str] = None
     ):
         """
         Initialize ZAPI instance.
@@ -30,11 +31,11 @@ class ZAPI:
         Args:
             client_id: Client ID for authentication
             secret: Secret key for authentication
-            llm_keys: Optional dictionary of LLM provider API keys
-                     Format: {"provider": "api_key"} (e.g., {"anthropic": "sk-ant-..."})
+            llm_provider: Optional LLM provider name (e.g., "anthropic")
+            llm_api_key: Optional LLM API key for the specified provider
             
         Raises:
-            ValueError: If client_id or secret is empty, or llm_keys format is invalid
+            ValueError: If client_id or secret is empty, or LLM key format is invalid
             RuntimeError: If token fetch fails
         """
         if not client_id or not client_id.strip():
@@ -51,10 +52,11 @@ class ZAPI:
         # Initialize encryption handler
         self._key_encryptor = LLMKeyEncryption(self.org_id)
         
-        # Validate and encrypt LLM keys if provided
-        self._encrypted_llm_keys: Optional[str] = None
-        if llm_keys:
-            self.set_llm_keys(llm_keys)
+        # Validate and encrypt LLM key if provided
+        self._encrypted_llm_key: Optional[str] = None
+        self._llm_provider: Optional[str] = None
+        if llm_provider and llm_api_key:
+            self.set_llm_key(llm_provider, llm_api_key)
     
     def _fetch_auth_token(self) -> tuple[str, str]:
         """
@@ -150,55 +152,105 @@ class ZAPI:
             except Exception as e:
                 raise RuntimeError(f"Token validation error: {e}")
     
+    def set_llm_key(self, provider: str, api_key: str) -> None:
+        """
+        Set LLM API key for a specific provider.
+        
+        Args:
+            provider: Provider name (e.g., "anthropic")
+            api_key: API key for the specified provider
+            
+        Raises:
+            ValueError: If provider or api_key format is invalid
+            RuntimeError: If encryption fails
+        """
+        if not provider or not api_key:
+            self._encrypted_llm_key = None
+            self._llm_provider = None
+            return
+        
+        # Validate key format for the provider
+        validated_keys = validate_llm_keys({provider: api_key})
+        validated_provider = list(validated_keys.keys())[0]
+        validated_key = list(validated_keys.values())[0]
+        
+        # Encrypt only the API key using org_id (provider stored separately)
+        try:
+            self._encrypted_llm_key = self._key_encryptor.encrypt_key(validated_key)
+            self._llm_provider = validated_provider
+        except Exception as e:
+            raise RuntimeError(f"Failed to encrypt LLM key: {e}")
+    
+    def get_llm_provider(self) -> Optional[str]:
+        """
+        Get the configured LLM provider.
+        
+        Returns:
+            Provider name if configured, None otherwise
+        """
+        return self._llm_provider
+
+    def get_decrypted_llm_key(self) -> Optional[str]:
+        """
+        Get the decrypted LLM API key.
+        
+        Returns:
+            Decrypted API key if configured, None otherwise
+        """
+        try:
+            if not self._encrypted_llm_key:
+                return None
+            return self._key_encryptor.decrypt_key(self._encrypted_llm_key)
+        except Exception as e:
+            print(f"Failed to decrypt LLM key: {e}")
+            return None
+    
+    def has_llm_key(self) -> bool:
+        """
+        Check if LLM key is configured.
+        
+        Returns:
+            True if LLM key is set, False otherwise
+        """
+        return self._encrypted_llm_key is not None
+    
+    # Backward compatibility methods for examples/README
     def set_llm_keys(self, llm_keys: Dict[str, str]) -> None:
         """
-        Set LLM API keys for the session.
+        Legacy method: Set LLM keys from dictionary (uses first key-value pair).
         
         Args:
             llm_keys: Dictionary mapping provider names to API keys
-                     Format: {"provider": "api_key"} (e.g., {"anthropic": "sk-ant-..."})
             
-        Raises:
-            ValueError: If llm_keys format is invalid
-            RuntimeError: If encryption fails
+        Note: This method is for backward compatibility. Only the first key-value pair is used.
         """
         if not llm_keys:
-            self._encrypted_llm_keys = None
+            self.set_llm_key("", "")
             return
         
-        # Validate keys format and providers
-        validated_keys = validate_llm_keys(llm_keys)
-        
-        # Encrypt the keys using org_id
-        try:
-            self._encrypted_llm_keys = self._key_encryptor.encrypt_keys(validated_keys)
-        except Exception as e:
-            raise RuntimeError(f"Failed to encrypt LLM keys: {e}")
+        # Use the first key-value pair
+        provider = list(llm_keys.keys())[0]
+        api_key = list(llm_keys.values())[0]
+        self.set_llm_key(provider, api_key)
     
     def get_llm_providers(self) -> list[str]:
         """
-        Get list of configured LLM providers.
+        Legacy method: Get list of configured LLM providers.
         
         Returns:
-            List of provider names that have been configured
+            List containing the single configured provider, or empty list
         """
-        if not self._encrypted_llm_keys:
-            return []
-        
-        try:
-            decrypted_keys = self._key_encryptor.decrypt_keys(self._encrypted_llm_keys)
-            return list(decrypted_keys.keys())
-        except Exception:
-            return []
+        provider = self.get_llm_provider()
+        return [provider] if provider else []
     
     def has_llm_keys(self) -> bool:
         """
-        Check if LLM keys are configured.
+        Legacy method: Check if LLM keys are configured.
         
         Returns:
-            True if LLM keys are set, False otherwise
+            True if LLM key is set, False otherwise
         """
-        return self._encrypted_llm_keys is not None
+        return self.has_llm_key()
     
     def launch_browser(
         self,
@@ -263,11 +315,12 @@ class ZAPI:
             "Authorization": f"Bearer {self.auth_token}"
         }
         
-        # Prepare metadata if LLM keys are configured
+        # Prepare metadata if LLM key is configured
         metadata = {}
-        if self.has_llm_keys():
+        if self.has_llm_key():
             metadata = {
-                "encrypted_llm_keys": self._encrypted_llm_keys,
+                "encrypted_llm_key": self._encrypted_llm_key,
+                "llm_provider": self._llm_provider,  # Provider sent in plaintext
                 "byok_enabled": True
             }
         else:
@@ -289,9 +342,8 @@ class ZAPI:
             response = requests.post(url, headers=headers, files=files, data=data)
         
         print("file uploaded successfully")
-        if self.has_llm_keys():
-            providers = ", ".join(self.get_llm_providers())
-            print(f"Included encrypted keys for providers: {providers}")
+        if self.has_llm_key():
+            print(f"Included encrypted key for provider: {self.get_llm_provider()}")
         
         response.raise_for_status()
         return response.json()

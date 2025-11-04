@@ -1,9 +1,7 @@
 """Secure encryption/decryption utilities for LLM API keys."""
 
 import base64
-import json
 import secrets
-from typing import Dict, Optional, Tuple
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -55,12 +53,12 @@ class LLMKeyEncryption:
         )
         return kdf.derive(self.org_id.encode('utf-8'))
     
-    def encrypt_keys(self, llm_keys: Dict[str, str]) -> str:
+    def encrypt_key(self, api_key: str) -> str:
         """
-        Encrypt LLM API keys dictionary.
+        Encrypt a single LLM API key using org_id as context.
         
         Args:
-            llm_keys: Dictionary mapping provider names to API keys
+            api_key: API key to encrypt
             
         Returns:
             Base64-encoded encrypted data with embedded salt and nonce
@@ -68,8 +66,8 @@ class LLMKeyEncryption:
         Raises:
             ValueError: If encryption fails
         """
-        if not llm_keys:
-            raise ValueError("llm_keys cannot be empty")
+        if not api_key or not api_key.strip():
+            raise ValueError("api_key cannot be empty")
         
         try:
             # Generate random salt and nonce
@@ -79,8 +77,8 @@ class LLMKeyEncryption:
             # Derive encryption key
             key = self._derive_key(salt)
             
-            # Serialize keys to JSON
-            plaintext = json.dumps(llm_keys, separators=(',', ':')).encode('utf-8')
+            # Only encrypt the API key itself (no provider needed)
+            plaintext = api_key.strip().encode('utf-8')
             
             # Encrypt using AES-256-GCM
             cipher = Cipher(
@@ -98,7 +96,7 @@ class LLMKeyEncryption:
             return base64.b64encode(encrypted_data).decode('ascii')
             
         except Exception as e:
-            raise ValueError(f"Failed to encrypt LLM keys: {e}")
+            raise ValueError(f"Failed to encrypt LLM key: {e}")
         finally:
             # Clear sensitive data from memory
             if 'key' in locals():
@@ -106,15 +104,15 @@ class LLMKeyEncryption:
             if 'plaintext' in locals():
                 plaintext = b'\x00' * len(plaintext)
     
-    def decrypt_keys(self, encrypted_data: str) -> Dict[str, str]:
+    def decrypt_key(self, encrypted_data: str) -> str:
         """
-        Decrypt LLM API keys from encrypted data.
+        Decrypt a single LLM API key from encrypted data.
         
         Args:
             encrypted_data: Base64-encoded encrypted data
             
         Returns:
-            Dictionary mapping provider names to API keys
+            Decrypted API key string
             
         Raises:
             ValueError: If decryption fails or data is corrupted
@@ -156,21 +154,13 @@ class LLMKeyEncryption:
             decryptor = cipher.decryptor()
             plaintext = decryptor.update(ciphertext) + decryptor.finalize()
             
-            # Parse JSON
-            try:
-                llm_keys = json.loads(plaintext.decode('utf-8'))
-            except (json.JSONDecodeError, UnicodeDecodeError) as e:
-                raise ValueError(f"Failed to parse decrypted data: {e}")
-            
-            if not isinstance(llm_keys, dict):
-                raise ValueError("Decrypted data is not a valid key dictionary")
-            
-            return llm_keys
+            # Return decrypted API key directly
+            return plaintext.decode('utf-8')
             
         except Exception as e:
-            if "Failed to parse decrypted data" in str(e) or "Invalid base64" in str(e):
+            if "Invalid base64" in str(e):
                 raise
-            raise ValueError(f"Failed to decrypt LLM keys: {e}")
+            raise ValueError(f"Failed to decrypt LLM key: {e}")
         finally:
             # Clear sensitive data from memory
             if key is not None:
@@ -179,63 +169,51 @@ class LLMKeyEncryption:
                 plaintext = b'\x00' * len(plaintext)
 
 
-def encrypt_llm_keys(org_id: str, llm_keys: Dict[str, str]) -> str:
+def encrypt_llm_key(org_id: str, api_key: str) -> str:
     """
-    Convenience function to encrypt LLM keys.
+    Convenience function to encrypt a single LLM key.
     
     Args:
         org_id: Organization ID for encryption context
-        llm_keys: Dictionary of provider names to API keys
+        api_key: API key to encrypt
         
     Returns:
         Base64-encoded encrypted data
     """
     encryptor = LLMKeyEncryption(org_id)
-    return encryptor.encrypt_keys(llm_keys)
+    return encryptor.encrypt_key(api_key)
 
 
-def decrypt_llm_keys(org_id: str, encrypted_data: str) -> Dict[str, str]:
+def decrypt_llm_key(org_id: str, encrypted_data: str) -> str:
     """
-    Convenience function to decrypt LLM keys.
+    Convenience function to decrypt a single LLM key.
     
     Args:
         org_id: Organization ID for decryption context
         encrypted_data: Base64-encoded encrypted data
         
     Returns:
-        Dictionary of provider names to API keys
+        Decrypted API key string
     """
     decryptor = LLMKeyEncryption(org_id)
-    return decryptor.decrypt_keys(encrypted_data)
+    return decryptor.decrypt_key(encrypted_data)
 
 
-def secure_compare_keys(keys1: Optional[Dict[str, str]], keys2: Optional[Dict[str, str]]) -> bool:
+def secure_compare_key(provider1: str, key1: str, provider2: str, key2: str) -> bool:
     """
-    Securely compare two key dictionaries without timing attacks.
+    Securely compare two provider-key pairs without timing attacks.
     
     Args:
-        keys1: First key dictionary
-        keys2: Second key dictionary
+        provider1: First provider name
+        key1: First API key
+        provider2: Second provider name  
+        key2: Second API key
         
     Returns:
-        True if dictionaries are equal, False otherwise
+        True if both provider and key match, False otherwise
     """
-    if keys1 is None and keys2 is None:
-        return True
-    if keys1 is None or keys2 is None:
-        return False
+    # Use secrets.compare_digest for timing-safe comparison
+    provider_match = secrets.compare_digest(provider1, provider2)
+    key_match = secrets.compare_digest(key1, key2)
     
-    if len(keys1) != len(keys2):
-        return False
-    
-    # Compare each key-value pair securely
-    result = True
-    for provider in set(keys1.keys()) | set(keys2.keys()):
-        key1 = keys1.get(provider, "")
-        key2 = keys2.get(provider, "")
-        
-        # Use secrets.compare_digest for timing-safe comparison
-        if not secrets.compare_digest(key1, key2):
-            result = False
-    
-    return result
+    return provider_match and key_match
