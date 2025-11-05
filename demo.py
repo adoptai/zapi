@@ -2,14 +2,13 @@
 """ZAPI Demo Script - Simplified"""
 
 from zapi import ZAPI
-import zapi
 
 
 def main():
-    client_id = "client_id"
-    secret = "secret"
-    url = "https://app.adopt.ai"
-    output_file = "demo_session.har"
+    client_id = "CLIENT_ID"
+    secret = "SECRET_KEY"
+    url = "URL"
+    output_file = "OUTPUT_FILE.har"
     
     try:
         # Initialize and run ZAPI
@@ -26,7 +25,5 @@ def main():
     
     return 0
 
-
 if __name__ == "__main__":
     exit(main())
-

@@ -148,3 +148,30 @@ class ZAPI:
         response.raise_for_status()
         return response.json()
 
+
+    def get_documented_apis(self, page: int = 1, page_size: int = 10):
+        """
+        Fetch the list of documented APIs with pagination support.
+        
+        Args:
+            page: Page number to fetch (default: 1)
+            page_size: Number of items per page (default: 10)
+        
+        Returns:
+            Response JSON containing the list of documented APIs
+            
+        Raises:
+            requests.exceptions.RequestException: If the request fails
+        """
+        url = "https://connect.adopt.ai/v1/tools/apis"
+        headers = {
+            "Authorization": f"Bearer {self.auth_token}"
+        }
+        params = {
+            "page": page,
+            "page_size": page_size
+        }
+        
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        return response.json()
