@@ -31,6 +31,9 @@ ENV/
 env.bak/
 venv.bak/
 
+# Environment variables
+.env
+
 # IDEs
 .vscode/
 .idea/
@@ -48,6 +51,9 @@ htmlcov/
 
 # HAR files
 *.har
+
+# Poetry lock file
+poetry.lock
 
 # Playwright
 playwright-report/
