@@ -1,14 +1,67 @@
+<h3 align="center">
+  <a name="readme-top"></a>
+  <img
+    src="img/logo.png"
+    height="200"
+  >
+</h3>
+<div align="center">
+    <a href="https://github.com/firecrawl/firecrawl/blob/main/LICENSE">
+  <img src="https://img.shields.io/github/license/firecrawl/firecrawl" alt="License">
+<a href="https://GitHub.com/adoptai/zapi/graphs/contributors">
+  <img src="https://img.shields.io/github/contributors/adoptai/zapi.svg" alt="GitHub Contributors">
+</a>
+<a href="https://www.adopt.ai">
+  <img src="https://img.shields.io/badge/Visit-AdoptAI.dev-orange" alt="Visit Adopt AI">
+</a>
+</div>
+<div>
+  <p align="center">
+    <a href="https://twitter.com/getadoptai">
+      <img src="https://img.shields.io/badge/Follow%20on%20X-000000?style=for-the-badge&logo=x&logoColor=white" alt="Follow on X" />
+    </a>
+    <a href="https://www.linkedin.com/company/getadoptai">
+      <img src="https://img.shields.io/badge/Follow%20on%20LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="Follow on LinkedIn" />
+    </a>
+    <a href="https://discord.com/invite/aVQayDgk">
+      <img src="https://img.shields.io/badge/Join%20our%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join our Discord" />
+    </a>
+  </p>
+</div>
+
 # ZAPI - Zero-Shot API Discovery
 
-ZAPI is an open-source Python library that automatically captures network traffic and API calls from web applications. Perfect for API discovery, LLM training datasets, and understanding how web apps communicate with backends.
+Transform any application into an intelligent agent in days, not months.
+
+ZAPI by Adopt AI is an open-source Python library that automatically captures, documents, and transforms your application's network traffic into agent-ready tooling. Perfect for API discovery, LLM training datasets, and understanding how web apps communicate with backend.
+
+## Why ZAPI?
+
+Building AI agents shouldn't require months of reverse-engineering your own APIs or working on API modernization projects. ZAPI eliminates the bottleneck by:
+
+-**Automatic API Discovery**: Captures all network traffic and API calls via a browser use agent
+-**Intelligent Documentation**: Generates comprehensive API specifications without manual work
+-**LLM Ready**: Creates training datasets and action definitions optimized for AI Agents
+-**Secure by Design**: Enterprise-grade security with encrypted key management
+
+## Perfect For
+-**AI Engineers**: Rapidly create action libraries for your AI copilots and agents
+-**Dev Ops**: Document legacy systems and undocumented APIs automatically
 
 ## 🔑 Bring Your Own Key (BYOK)
 
-ZAPI supports secure LLM API key integration using a generic key-value approach. **Anthropic is explicitly supported** as our primary provider with full validation and optimized pipeline integration. Your keys are encrypted using organization-specific contexts and transmitted securely to our discovery service.
+ZAPI supports secure LLM integration for enhanced API understanding and documentation generation. Your keys are encrypted using organization-specific contexts and transmitted securely to our discovery service.
 
-**Supported Providers:**
-- **🔥 Anthropic** (Primary support - fully validated, optimized for our pipelines)
-- 📦 OpenAI, Google, Cohere, HuggingFace (Extended support - basic validation, extensible)
+### Supported LLM Providers
+
+| Provider       | Support Level | Features                                                       |
+|----------------|----------------|----------------------------------------------------------------|
+| 🔥 **Anthropic**     | **Primary**     | Fully validated, optimized for discovery pipelines, recommended |
+| 📦 **OpenAI**        | Community        | Basic validation                          |
+| 📦 **Google**        | Community        | Basic validation                          |
+| 📦 **Cohere**        | Community        | Basic validation                          |
+| 📦 **HuggingFace**   | Community        | Basic validation                          |
+
 
 
 ## Installation
