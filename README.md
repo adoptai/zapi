@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/github/contributors/adoptai/zapi.svg" alt="GitHub Contributors">
 </a>
 <a href="https://www.adopt.ai">
-  <img src="https://img.shields.io/badge/Visit-AdoptAI.dev-orange" alt="Visit Adopt AI">
+  <img src="https://img.shields.io/badge/Visit-Adopt.AI-blue" alt="Visit Adopt AI">
 </a>
 </div>
 <div>
