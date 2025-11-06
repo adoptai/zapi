@@ -69,7 +69,7 @@ class ZAPI:
         self.secret = secret
         
         # Fetch auth token and extract org_id
-        self.auth_token, self.org_id = self._fetch_auth_token()
+        self.auth_token, self.org_id, self.email = self._fetch_auth_token()
         
         # Initialize encryption handler
         self._key_encryptor = LLMKeyEncryption(self.org_id)
@@ -120,9 +120,9 @@ class ZAPI:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
             
-            org_id = loop.run_until_complete(self._validate_token_and_extract_org_id(token))
+            org_id, email = loop.run_until_complete(self._validate_token_and_extract_org_id(token))
             
-            return token, org_id
+            return token, org_id, email
                 
         except requests.exceptions.Timeout:
             raise ZAPINetworkError("Authentication request timed out. Please check your internet connection.")
@@ -171,12 +171,14 @@ class ZAPI:
                     raise RuntimeError("Token validation failed")
                 
                 org_id = validation_result.get('org_id')
+                email = validation_result.get('email', "")
                 if not org_id or not isinstance(org_id, str):
                     raise RuntimeError("Invalid org_id in validation response")
 
                 print(f"Org ID: {org_id}")
+                print(f"Email: {email}")
                 
-                return org_id
+                return org_id, email
                 
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 401:
@@ -386,12 +388,20 @@ class ZAPI:
                 "byok_encrypted_llm_key": self._encrypted_llm_key,
                 "byok_llm_provider": self._llm_provider,  # Provider sent in plaintext
                 "byok_llm_model_name": self._llm_model_name,
-                "byok_enabled": True
+                "byok_enabled": True,
+                "is_trial_user": True,
             }
+
+            if self.email:
+                metadata["user_email"] = self.email
         else:
             metadata = {
-                "byok_enabled": False
+                "byok_enabled": False,
+                "is_trial_user": True,
             }
+
+            if self.email:
+                metadata["user_email"] = self.email
         
         # Prepare multipart form data with enhanced error handling
         try:
