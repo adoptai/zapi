@@ -32,9 +32,12 @@ playwright install
 
 ### 1. Get Your API Credentials
 
-ZAPI uses OAuth authentication with the adopt.ai platform. You'll need:
+ZAPI uses OAuth authentication with the adopt.ai platform and supports LLM integration. You'll need:
 - A `client_id` 
 - A `secret` key
+- An LLM `provider` (anthropic, openai, google, or groq)
+- An LLM `api_key` for your chosen provider
+- An LLM `model_name` (e.g., "claude-3-5-sonnet-20241022")
 
 Add these to your environment or use them directly in your code.
 
@@ -45,8 +48,14 @@ Start ZAPI with just a few lines of code:
 ```python
 from zapi import ZAPI
 
-# Initialize with client credentials
-z = ZAPI(client_id="YOUR_CLIENT_ID", secret="YOUR_SECRET")
+# Initialize with client credentials and LLM configuration
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID", 
+    secret="YOUR_SECRET",
+    llm_provider="anthropic",
+    llm_api_key="sk-ant-YOUR_API_KEY",
+    llm_model_name="claude-3-5-sonnet-20241022"
+)
 
 # Launch browser and capture traffic
 session = z.launch_browser(url="https://app.example.com/dashboard")
@@ -57,17 +66,58 @@ session.close()
 ```
 
 The library will:
-1. Authenticate with the adopt.ai OAuth API
-2. Launch a browser with automatic token injection
-3. Capture all network traffic during your session
-4. Export everything to standard HAR format
+1. Authenticates with the adopt.ai OAuth API
+2. Encrypts your LLM API key for secure tool ingestion
+3. Launches a browser with automatic token injection
+4. Capturees all network traffic during your session
+5. Exports everything to standard HAR format with encrypted LLM metadata
 
 ### 3. Test Your Installation
+
+You can also load credentials from a `.env` file:
+
+```bash
+# Create .env file with your credentials
+echo "LLM_PROVIDER=anthropic" >> .env
+echo "LLM_API_KEY=sk-ant-your-key-here" >> .env
+echo "LLM_MODEL_NAME=claude-3-5-sonnet-20241022" >> .env
+```
 
 Run the demo script to verify everything works:
 
 ```bash
 python demo.py
+```
+
+## LLM Integration & Security
+
+### Supported LLM Providers
+
+ZAPI supports 4 main LLM providers with full validation:
+
+- **Anthropic**
+- **OpenAI**:
+- **Google**:
+- **Groq**:
+
+### Secure Key Encryption
+
+All LLM API keys are encrypted before being used for tool ingestion:
+
+```python
+# Keys are automatically encrypted when ZAPI is initialized
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID",
+    secret="YOUR_SECRET", 
+    llm_provider="anthropic",
+    llm_api_key="sk-ant-your-key",  # Encrypted automatically
+    llm_model_name="claude-3-5-sonnet-20241022"
+)
+
+# Check if LLM key is configured
+if z.has_llm_key():
+    print(f"Using provider: {z.get_llm_provider()}")
+    print(f"Using model: {z.get_llm_model_name()}")
 ```
 
 ## Core Features & Examples
@@ -79,7 +129,13 @@ ZAPI provides simple methods for interacting with web applications:
 ```python
 from zapi import ZAPI
 
-z = ZAPI(client_id="YOUR_CLIENT_ID", secret="YOUR_SECRET")
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID", 
+    secret="YOUR_SECRET",
+    llm_provider="anthropic",
+    llm_api_key="sk-ant-YOUR_API_KEY",
+    llm_model_name="claude-3-5-sonnet-20241022"
+)
 session = z.launch_browser(url="https://app.example.com")
 
 # Navigate and interact
@@ -97,7 +153,13 @@ session.close()
 For automatic cleanup, use ZAPI sessions as context managers:
 
 ```python
-z = ZAPI(client_id="YOUR_CLIENT_ID", secret="YOUR_SECRET")
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID", 
+    secret="YOUR_SECRET",
+    llm_provider="openai",
+    llm_api_key="sk-YOUR_OPENAI_KEY",
+    llm_model_name="gpt-4"
+)
 
 with z.launch_browser(url="https://app.example.com") as session:
     session.navigate("/api-endpoint")
@@ -111,20 +173,27 @@ with z.launch_browser(url="https://app.example.com") as session:
 Once you've captured traffic, upload it to the adopt.ai platform for automatic API documentation:
 
 ```python
-z = ZAPI(client_id="YOUR_CLIENT_ID", secret="YOUR_SECRET")
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID", 
+    secret="YOUR_SECRET",
+    llm_provider="anthropic",
+    llm_api_key="sk-ant-YOUR_API_KEY",
+    llm_model_name="claude-3-5-sonnet-20241022"
+)
 
 # Capture traffic
 session = z.launch_browser(url="https://app.example.com")
 session.dump_logs("session.har")
 session.close()
 
-# Upload for documentation
+# Upload for documentation (includes encrypted LLM metadata)
 z.upload_har("session.har")
 ```
 
 The adopt.ai platform will:
 - Parse all API calls from your HAR file
-- Generate documentation automatically
+- Generate documentation automatically 
+- Use your encrypted LLM key for enhanced processing
 - Make APIs available for LLM agents and tools
 
 ### Retrieving Documented APIs
@@ -132,7 +201,13 @@ The adopt.ai platform will:
 After uploading, retrieve your documented APIs programmatically:
 
 ```python
-z = ZAPI(client_id="YOUR_CLIENT_ID", secret="YOUR_SECRET")
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID", 
+    secret="YOUR_SECRET",
+    llm_provider="groq",
+    llm_api_key="gsk_YOUR_GROQ_KEY",
+    llm_model_name="mixtral-8x7b-32768"
+)
 
 # Get first page of documented APIs
 api_list = z.get_documented_apis(page=1, page_size=10)
@@ -252,6 +327,14 @@ finally:
 For applications requiring login, navigate and authenticate before capturing API traffic:
 
 ```python
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID",
+    secret="YOUR_SECRET", 
+    llm_provider="google",
+    llm_api_key="YOUR_GOOGLE_API_KEY",
+    llm_model_name="gemini-pro"
+)
+
 session = z.launch_browser(url="https://app.example.com/login", headless=False)
 
 # Manually log in when browser opens
@@ -268,11 +351,15 @@ session.close()
 
 ### ZAPI Class
 
-**`ZAPI(client_id, secret)`**
+**`ZAPI(client_id, secret, llm_provider, llm_model_name, llm_api_key)`**
 - `client_id` (str): OAuth client ID for authentication
 - `secret` (str): OAuth secret key
-- Raises `ValueError` if credentials are empty
-- Raises `RuntimeError` if authentication fails
+- `llm_provider` (str): LLM provider name ("anthropic", "openai", "google", "groq")
+- `llm_model_name` (str): LLM model name (e.g., "claude-3-5-sonnet-20241022")
+- `llm_api_key` (str): LLM API key for the specified provider
+- Raises `ZAPIValidationError` if credentials are empty or LLM key format is invalid
+- Raises `ZAPIAuthenticationError` if authentication fails
+- Raises `ZAPINetworkError` if network requests fail
 
 **`launch_browser(url, headless=True, wait_until="load", **playwright_options)`**
 - Returns: `BrowserSession` instance
@@ -283,7 +370,23 @@ session.close()
 **`upload_har(har_file)`**
 - Uploads HAR file to adopt.ai for API documentation
 - `har_file` (str): Path to HAR file
+- Includes encrypted LLM metadata if LLM key is configured
 - Returns: JSON response from API
+
+**`set_llm_key(provider, api_key, model_name)`**
+- Update LLM configuration after initialization
+- `provider` (str): LLM provider name
+- `api_key` (str): API key for the provider
+- `model_name` (str): Model name to use
+
+**`has_llm_key()`**
+- Returns: True if LLM key is configured, False otherwise
+
+**`get_llm_provider()`**
+- Returns: Configured LLM provider name or None
+
+**`get_llm_model_name()`**
+- Returns: Configured LLM model name or None
 
 **`get_documented_apis(page=1, page_size=10)`**
 - Retrieves documented APIs with pagination
@@ -307,10 +410,11 @@ session.close()
 ZAPI's workflow is simple but powerful:
 
 1. **Authentication**: Calls the adopt.ai OAuth API to obtain an access token
-2. **Token Injection**: Automatically injects the Bearer token in all request headers
-3. **Traffic Capture**: Records complete network activity during browser interactions
-4. **Export**: Saves everything to standard HAR format compatible with Chrome DevTools
-5. **Documentation**: Uploads to adopt.ai for automatic API discovery and documentation
+2. **LLM Key Encryption**: Encrypts your LLM API key for secure tool ingestion
+3. **Token Injection**: Automatically injects the Bearer token in all request headers
+4. **Traffic Capture**: Records complete network activity during browser interactions
+5. **Export**: Saves everything to standard HAR format compatible with Chrome DevTools
+6. **Documentation**: Uploads to adopt.ai with encrypted LLM metadata for enhanced API processing
 
 ## Use Cases
 
@@ -328,6 +432,12 @@ Install ZAPI and start discovering APIs:
 ```bash
 pip install -r requirements.txt
 playwright install
+
+# Set up your .env file with credentials
+echo "LLM_PROVIDER=anthropic" >> .env
+echo "LLM_API_KEY=sk-ant-your-key" >> .env
+echo "LLM_MODEL_NAME=claude-3-5-sonnet-20241022" >> .env
+
 python demo.py
 ```
 
