@@ -6,8 +6,6 @@
   >
 </h3>
 <div align="center">
-    <a href="https://github.com/firecrawl/firecrawl/blob/main/LICENSE">
-  <img src="https://img.shields.io/github/license/firecrawl/firecrawl" alt="License">
 <a href="https://GitHub.com/adoptai/zapi/graphs/contributors">
   <img src="https://img.shields.io/github/contributors/adoptai/zapi.svg" alt="GitHub Contributors">
 </a>
