@@ -37,14 +37,14 @@ ZAPI by Adopt AI is an open-source Python library that automatically captures, d
 
 Building AI agents shouldn't require months of reverse-engineering your own APIs or working on API modernization projects. ZAPI eliminates the bottleneck by:
 
--**Automatic API Discovery**: Captures all network traffic and API calls via a browser use agent
--**Intelligent Documentation**: Generates comprehensive API specifications without manual work
--**LLM Ready**: Creates training datasets and action definitions optimized for AI Agents
--**Secure by Design**: Enterprise-grade security with encrypted key management
+- **Automatic API Discovery**: Captures all network traffic and API calls via a browser use agent
+- **Intelligent Documentation**: Generates comprehensive API specifications without manual work
+- **LLM Ready**: Creates training datasets and action definitions optimized for AI Agents
+- **Secure by Design**: Enterprise-grade security with encrypted key management
 
 ## Perfect For
--**AI Engineers**: Rapidly create action libraries for your AI copilots and agents
--**Dev Ops**: Document legacy systems and undocumented APIs automatically
+- **AI Engineers**: Rapidly create action libraries for your AI copilots and agents
+- **Dev Ops**: Document legacy systems and undocumented APIs automatically
 
 ## 🔑 Bring Your Own Key (BYOK)
 
