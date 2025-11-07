@@ -3,13 +3,15 @@
 from zapi import (
     ZAPI, 
     load_llm_credentials,
+    analyze_har_file,
     ZAPIError,
     ZAPIAuthenticationError,
     ZAPIValidationError,
     ZAPINetworkError,
     BrowserSessionError,
     BrowserNavigationError,
-    BrowserInitializationError
+    BrowserInitializationError,
+    HarProcessingError
 )
 
 
@@ -47,8 +49,36 @@ def main():
         session.dump_logs(output_file)
         print(f"✅ Session saved to: {output_file}")
         
-        print("☁️ Uploading HAR file...")
-        z.upload_har(output_file)
+        # Analyze HAR file before uploading
+        print("\n🔍 Analyzing HAR file...")
+        upload_file = output_file  # Default to original file
+        
+        try:
+            # Analyze HAR file without saving filtered version
+            stats, report, _ = analyze_har_file(output_file, save_filtered=False)
+            
+            # Show simplified analysis - only valid entries, cost and time
+            print("\n📊 HAR Analysis Results:")
+            print(f"   ✅ API-relevant entries: {stats.valid_entries:,}")
+            print(f"   💰 Estimated cost: ${stats.estimated_cost_usd:.2f}")
+            print(f"   ⏱️  Estimated processing time: {round(stats.estimated_time_minutes)} minutes")
+            
+            # Confirmation prompt for upload  
+            print(f"\n💡 Ready to upload HAR file with estimated cost of ${stats.estimated_cost_usd:.2f}")
+            user_input = input("Press ENTER to proceed with upload, or 'n' to skip: ").strip().lower()
+            
+            if user_input == 'n':
+                print("⏹️ Upload cancelled by user")
+                session.close()
+                return 0
+                
+        except HarProcessingError as e:
+            print(f"⚠️ HAR analysis failed: {e}")
+            print("Proceeding with upload anyway...")
+            upload_file = output_file
+        
+        print("\n☁️ Uploading HAR file...")
+        z.upload_har(upload_file)
         print("✅ HAR file uploaded successfully!")
         
         # print the decrypted LLM key 
@@ -110,6 +140,15 @@ def main():
         print("   - Restart the script")
         print("   - Check if the browser window is responsive")
         print("   - Ensure sufficient disk space for HAR files")
+        return 1
+        
+    except HarProcessingError as e:
+        print("❌ HAR Processing Error:")
+        print(f"   {str(e)}")
+        print("💡 This error occurred during HAR file analysis:")
+        print("   - Check if the HAR file was generated correctly")
+        print("   - Ensure the file is not corrupted or empty")
+        print("   - Try generating a new session")
         return 1
         
     except ZAPIError as e:
