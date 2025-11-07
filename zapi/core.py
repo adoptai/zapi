@@ -171,7 +171,7 @@ class ZAPI:
                     raise RuntimeError("Token validation failed")
                 
                 org_id = validation_result.get('org_id')
-                email = validation_result.get('email', "")
+                email = validation_result.get('user_email', "")
                 if not org_id or not isinstance(org_id, str):
                     raise RuntimeError("Invalid org_id in validation response")
 
@@ -387,7 +387,7 @@ class ZAPI:
             metadata = {
                 "byok_encrypted_llm_key": self._encrypted_llm_key,
                 "byok_llm_provider": self._llm_provider,  # Provider sent in plaintext
-                "byok_llm_model_name": self._llm_model_name,
+                "byok_llm_model": self._llm_model_name,
                 "byok_enabled": True,
                 "is_trial_user": True,
             }
