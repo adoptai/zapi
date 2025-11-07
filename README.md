@@ -4,11 +4,17 @@ ZAPI is an open-source Python library that automatically captures network traffi
 
 ## 🔑 Bring Your Own Key (BYOK)
 
-ZAPI supports secure LLM API key integration using a generic key-value approach. **Anthropic is explicitly supported** as our primary provider with full validation and optimized pipeline integration. Your keys are encrypted using organization-specific contexts and transmitted securely to our discovery service.
+ZAPI requires LLM API keys for enhanced API discovery. Your keys are secured and transmitted safely to our discovery service.
 
 **Supported Providers:**
-- **🔥 Anthropic** (Primary support - fully validated, optimized for our pipelines)
-- 📦 OpenAI, Google, Cohere, HuggingFace (Extended support - basic validation, extensible)
+- **Groq**
+- **Anthropic**
+- **OpenAI**
+- **Google** 
+
+## 📊 HAR Analysis & Cost Estimation
+
+ZAPI includes powerful HAR file analysis capabilities that automatically filter API-relevant traffic, exclude static assets, and provide cost/time estimates for processing. Get detailed statistics before uploading to make informed decisions about your API discovery sessions.
 
 
 ## Installation
@@ -26,41 +32,33 @@ playwright install
 ## Quick Start
 
 ```python
-from zapi import ZAPI
+from zapi import ZAPI, load_llm_credentials
 
-# Initialize with client credentials
-z = ZAPI(client_id="YOUR_CLIENT_ID", secret="YOUR_SECRET")
+# Load LLM credentials from .env or configuration
+llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
+
+# Initialize with credentials and LLM configuration
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID", 
+    secret="YOUR_SECRET",
+    llm_provider=llm_provider,           # e.g., "anthropic"
+    llm_model_name=llm_model_name,       # e.g., "claude-3-5-sonnet-20241022"
+    llm_api_key=llm_api_key              # Your API key
+)
 
 # Launch browser and capture traffic
 session = z.launch_browser(url="https://app.example.com/dashboard")
 
 # Export network logs
 session.dump_logs("session.har")
-session.close()
-```
 
-### With LLM Keys (BYOK)
+# Analyze HAR file before upload (optional but recommended)
+from zapi import analyze_har_file
+stats, report, _ = analyze_har_file("session.har")
+print(f"API entries: {stats.valid_entries}, Estimated cost: ${stats.estimated_cost_usd:.2f}")
 
-```python
-from zapi import ZAPI
-
-# Initialize with your LLM API keys for enhanced discovery
-llm_keys = {
-    "anthropic": "sk-ant-your-anthropic-key-here",  # Primary supported
-    "openai": "sk-your-openai-key-here"             # Extended support
-}
-
-z = ZAPI(
-    client_id="YOUR_CLIENT_ID", 
-    secret="YOUR_SECRET",
-    llm_keys=llm_keys  # Encrypted using your org_id
-)
-
-session = z.launch_browser(url="https://app.example.com")
-session.dump_logs("session.har")
-
-# Upload with encrypted LLM keys for enhanced API discovery
-z.upload_har("session.har")  # Keys included securely
+# Upload for enhanced API discovery
+z.upload_har("session.har")
 session.close()
 ```
 
@@ -73,16 +71,61 @@ python demo.py
 ```bash
 # Copy the example file and add your credentials
 cp .env.example .env
+```
 
+## 📊 HAR Analysis & Statistics
+
+ZAPI includes comprehensive HAR file analysis to help you understand your captured traffic and make informed decisions about processing costs.
+
+### Analyze HAR Files
+
+```python
+from zapi import analyze_har_file, HarProcessingError
+
+try:
+    # Analyze HAR file with detailed statistics
+    stats, report, filtered_file = analyze_har_file(
+        "session.har", 
+        save_filtered=True,           # Save filtered version with only API entries
+        filtered_output_path="api_only.har"  # Optional custom path
+    )
+    
+    # Access detailed statistics
+    print(f"Total entries: {stats.total_entries:,}")
+    print(f"API-relevant entries: {stats.valid_entries:,}")
+    print(f"Unique domains: {stats.unique_domains:,}")
+    print(f"Estimated cost: ${stats.estimated_cost_usd:.2f}")
+    print(f"Estimated time: {stats.estimated_time_minutes:.1f} minutes")
+    
+    # Detailed breakdown
+    print("\nSkipped entries by reason:")
+    for reason, count in stats.skipped_by_reason.items():
+        if count > 0:
+            print(f"  {reason.replace('_', ' ').title()}: {count:,}")
+    
+    # Print formatted report
+    print("\n" + report)
+    
+except HarProcessingError as e:
+    print(f"HAR analysis failed: {e}")
 ```
 ## Usage Examples
 
 ### Navigation & Interaction
 
 ```python
-from zapi import ZAPI
+from zapi import ZAPI, load_llm_credentials
 
-z = ZAPI(client_id="YOUR_CLIENT_ID", secret="YOUR_SECRET")
+# Load credentials and initialize
+llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID", 
+    secret="YOUR_SECRET",
+    llm_provider=llm_provider,
+    llm_model_name=llm_model_name,
+    llm_api_key=llm_api_key
+)
+
 session = z.launch_browser(url="https://app.example.com")
 
 # Navigate and interact
@@ -98,7 +141,13 @@ session.close()
 ### Context Manager
 
 ```python
-z = ZAPI(client_id="YOUR_CLIENT_ID", secret="YOUR_SECRET")
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID", 
+    secret="YOUR_SECRET",
+    llm_provider="anthropic",
+    llm_model_name="claude-3-5-sonnet-20241022",
+    llm_api_key="sk-ant-your-key"
+)
 
 with z.launch_browser(url="https://app.example.com") as session:
     session.navigate("/api-endpoint")
@@ -111,65 +160,116 @@ with z.launch_browser(url="https://app.example.com") as session:
 
 ```python
 # Run with visible browser for debugging
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID", 
+    secret="YOUR_SECRET",
+    llm_provider="anthropic",
+    llm_model_name="claude-3-5-sonnet-20241022",
+    llm_api_key="sk-ant-your-key"
+)
 session = z.launch_browser(url="https://app.example.com", headless=False)
 ```
 
 ### LLM Key Management
 
 ```python
-from zapi import ZAPI, LLMProvider
+from zapi import ZAPI
 
-# Method 1: Constructor with keys
+# Initialize with LLM configuration
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID",
+    secret="YOUR_SECRET",
+    llm_provider="anthropic",           # Supported: groq, anthropic, openai, google
+    llm_model_name="claude-3-5-sonnet-20241022",
+    llm_api_key="sk-ant-your-key"
+)
+
+# Check configuration
+print(f"Provider: {z.get_llm_provider()}")        # 'anthropic'
+print(f"Model: {z.get_llm_model_name()}")         # 'claude-3-5-sonnet-20241022'
+print(f"Has key: {z.has_llm_key()}")              # True
+
+# Update LLM configuration after initialization
+z.set_llm_key("openai", "sk-your-openai-key", "gpt-4")
+
+# Access encrypted key (for debugging)
+encrypted_key = z.get_encrypted_llm_key()
+decrypted_key = z.get_decrypted_llm_key()  # Use carefully
+```
+
+### Complete Workflow with Analysis
+
+```python
+from zapi import ZAPI, load_llm_credentials, analyze_har_file
+
+# Load credentials and initialize
+llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
 z = ZAPI(
     client_id="YOUR_CLIENT_ID",
     secret="YOUR_SECRET", 
-    llm_keys={"anthropic": "sk-ant-your-key"}  # Anthropic primary support
+    llm_provider=llm_provider,
+    llm_model_name=llm_model_name,
+    llm_api_key=llm_api_key
 )
 
-# Method 2: Set keys after initialization
-z = ZAPI(client_id="YOUR_CLIENT_ID", secret="YOUR_SECRET")
-z.set_llm_keys({
-    "anthropic": "sk-ant-your-anthropic-key",
-    "openai": "sk-your-openai-key"
-})
+# Capture session
+session = z.launch_browser(url="https://app.example.com")
+# ... navigate and interact ...
+session.dump_logs("session.har")
+session.close()
 
-# Check configured providers
-print(f"Configured: {z.get_llm_providers()}")  # ['anthropic', 'openai']
-print(f"Has keys: {z.has_llm_keys()}")         # True
+# Analyze before upload
+stats, report, _ = analyze_har_file("session.har")
+print(f"Found {stats.valid_entries} API entries, estimated cost: ${stats.estimated_cost_usd:.2f}")
 
-# Generic approach - any provider supported
-z.set_llm_keys({"custom_provider": "your-api-key"})
+# Upload with confirmation
+if input("Upload? (y/n): ").lower() == 'y':
+    z.upload_har("session.har")
+    print("Upload completed!")
 ```
 
 ## API Reference
 
 ### ZAPI Class
 
-**`ZAPI(client_id, secret, llm_keys=None)`**
+**`ZAPI(client_id, secret, llm_provider, llm_model_name, llm_api_key)`**
 - `client_id` (str): Client ID for OAuth authentication
 - `secret` (str): Secret key for authentication  
-- `llm_keys` (dict, optional): LLM API keys using generic `{"provider": "api_key"}` format
-  - **Anthropic keys receive full validation and pipeline optimization**
-  - Other providers get basic validation for extensibility
-  - Keys are encrypted using your organization's unique context
+- `llm_provider` (str): LLM provider name - supports "groq", "anthropic", "openai", "google"
+- `llm_model_name` (str): LLM model name (e.g., "claude-3-5-sonnet-20241022", "gpt-4")
+- `llm_api_key` (str): LLM API key for the specified provider
+  - Keys are secured using your organization's unique context
 
 **`launch_browser(url, headless=True, **playwright_options)`**
 - Returns: `BrowserSession` instance
 - Automatically fetches auth token and injects it into all requests
 
-**`set_llm_keys(llm_keys)`**
-- Set or update LLM API keys after initialization
-- Keys are immediately encrypted and stored securely
+**`set_llm_key(provider, api_key, model_name)`**
+- Update LLM configuration after initialization
+- Keys are immediately encrypted
 
-**`get_llm_providers()`**
-- Returns list of configured LLM provider names
+**`get_llm_provider()`**
+- Returns the configured LLM provider name or None
 
-**`has_llm_keys()`**
-- Returns True if LLM keys are configured
+**`get_llm_model_name()`**
+- Returns the configured LLM model name or None
+
+**`get_encrypted_llm_key()`**
+- Returns the encrypted LLM API key or None
+
+**`get_decrypted_llm_key()`**
+- Returns the decrypted LLM API key or None (use carefully)
+
+**`has_llm_key()`**
+- Returns True if LLM key is configured
 
 **`upload_har(filepath)`**
-- Upload HAR file with optional encrypted LLM keys
-- Includes `byok_enabled` flag and encrypted key metadata
+- Upload HAR file with secured LLM keys
+- Includes metadata for enhanced API discovery
+
+**`get_documented_apis(page=1, page_size=10)`**
+- Fetch list of documented APIs with pagination
+- Returns JSON response with API documentation
 
 ### BrowserSession Class
 
@@ -184,59 +284,76 @@ z.set_llm_keys({"custom_provider": "your-api-key"})
 
 ## How It Works
 
-When initialized, ZAPI:
-1. Calls the adopt.ai OAuth API to obtain an access token
-2. **Validates the JWT token and extracts your organization ID**
-3. **Encrypts any provided LLM keys using your org_id as encryption context**
-4. Injects the auth token as a Bearer token in all request headers
-5. Captures complete network traffic during browser interactions
-6. Exports to standard HAR format compatible with Chrome DevTools
-7. **Optionally uploads HAR files with encrypted LLM keys for enhanced API discovery**
+try:
+    z = ZAPI(
+        client_id="invalid", 
+        secret="invalid", 
+        llm_provider="anthropic",
+        llm_model_name="claude-3-5-sonnet-20241022",
+        llm_api_key="invalid-key"
+    )
+except ZAPIAuthenticationError as e:
+    print(f"Authentication failed: {e}")
+except ZAPIValidationError as e:
+    print(f"Input validation error: {e}")
+except ZAPINetworkError as e:
+    print(f"Network error: {e}")
+```
 
 ## 🔒 Security & Privacy
 
 **LLM Key Protection:**
-- Keys encrypted immediately using AES-256-GCM with your organization's unique context
+- Keys are secured immediately using AES-256-GCM upon initialization
 - No plaintext keys stored in memory or logs
-- Ephemeral decryption only during secure transmission to adopt.ai
-- Each organization gets isolated encryption contexts
-- **Anthropic keys receive additional validation to ensure format correctness**
+- Secure transmission to adopt.ai discovery service
+- Each organization gets isolated contexts
 
-**Generic BYOK Approach:**
-- Use any LLM provider with `{"provider": "api_key"}` format
-- Anthropic optimized for our discovery pipelines with full validation
-- Other providers supported with basic validation for extensibility
-- Future-proof architecture for adding new providers
+**BYOK Configuration:**
+- Configure any supported provider: `(provider, model_name, api_key)`
+- Support for Groq, Anthropic, OpenAI, and Google
+- Secure credential loading with `load_llm_credentials()` function
 
 ## 🚀 Enhanced API Discovery with BYOK
 
 When you provide LLM API keys, ZAPI enables enhanced API discovery capabilities:
 
-**Benefits:**
-- **🔍 Deeper API Analysis**: Your LLM keys enable more sophisticated API pattern recognition
-- **📊 Richer Insights**: Enhanced understanding of API semantics and relationships
-- **🎯 Anthropic Optimization**: Primary support with pipeline optimizations for best results
-- **🔐 Zero Trust**: Your keys never leave your organization's encrypted context
-- **⚡ Seamless Integration**: Same simple API, enhanced discovery when keys provided
 
 **When to Use BYOK:**
 - Building LLM training datasets from API interactions
-- Comprehensive API documentation generation
+- Comprehensive API documentation generation  
 - Advanced API security analysis
 - Understanding complex application workflows
 - Creating intelligent API testing scenarios
+- Cost-effective API discovery with upfront estimates
 
 **Example Enhanced Workflow:**
 ```python
-# Standard discovery
-z_basic = ZAPI(client_id="ID", secret="SECRET")
-z_basic.upload_har("session.har")  # Basic traffic analysis
+from zapi import ZAPI, load_llm_credentials, analyze_har_file
 
-# Enhanced discovery with Anthropic
-z_enhanced = ZAPI(
+# Load credentials securely
+llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
+
+# Initialize with cost analysis
+z = ZAPI(
     client_id="ID", 
     secret="SECRET",
-    llm_keys={"anthropic": "sk-ant-your-key"}
+    llm_provider=llm_provider,      # e.g., "anthropic"
+    llm_model_name=llm_model_name,  # e.g., "claude-3-5-sonnet-20241022"
+    llm_api_key=llm_api_key
 )
-z_enhanced.upload_har("session.har")  # Enhanced AI-powered analysis
+
+# Capture session
+session = z.launch_browser(url="https://app.example.com")
+# ... navigate and interact ...
+session.dump_logs("session.har")
+
+# Analyze before upload with cost estimation
+stats, report, _ = analyze_har_file("session.har")
+print(f"Found {stats.valid_entries} API entries")
+print(f"Estimated cost: ${stats.estimated_cost_usd:.2f}")
+print(f"Estimated time: {stats.estimated_time_minutes:.1f} minutes")
+
+# Upload for API discovery
+z.upload_har("session.har")
+session.close()
 ```

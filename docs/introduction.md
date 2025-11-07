@@ -196,6 +196,49 @@ The adopt.ai platform will:
 - Use your encrypted LLM key for enhanced processing
 - Make APIs available for LLM agents and tools
 
+### HAR Analysis & Cost Estimation
+
+Before uploading, analyze your HAR files to understand what will be processed and estimate costs:
+
+```python
+from zapi import analyze_har_file, HarProcessingError
+
+try:
+    # Analyze HAR file with detailed statistics
+    stats, report, filtered_file = analyze_har_file(
+        "session.har", 
+        save_filtered=True,           # Save filtered version with only API entries
+        filtered_output_path="api_only.har"  # Optional custom path
+    )
+    
+    # Access detailed statistics
+    print(f"Total entries: {stats.total_entries:,}")
+    print(f"API-relevant entries: {stats.valid_entries:,}")
+    print(f"Unique domains: {stats.unique_domains:,}")
+    print(f"Estimated cost: ${stats.estimated_cost_usd:.2f}")
+    print(f"Estimated time: {stats.estimated_time_minutes:.1f} minutes")
+    
+    # Show which entries were filtered out and why
+    print("\nSkipped entries by reason:")
+    for reason, count in stats.skipped_by_reason.items():
+        if count > 0:
+            print(f"  {reason.replace('_', ' ').title()}: {count:,}")
+    
+    # Print full formatted report
+    print("\n" + report)
+    
+except HarProcessingError as e:
+    print(f"HAR analysis failed: {e}")
+```
+
+**HAR Processing Features:**
+- **Smart Filtering**: Automatically excludes static assets (JS, CSS, images, fonts)
+- **Cost Estimation**: Provides processing cost estimates
+- **Time Estimation**: Calculates expected processing time
+- **Domain Analysis**: Lists all unique domains found in the session
+- **Skip Reasons**: Detailed breakdown of why entries were filtered out
+- **Filtered Export**: Option to save a clean HAR file with only API-relevant entries
+
 ### Retrieving Documented APIs
 
 After uploading, retrieve your documented APIs programmatically:
@@ -347,6 +390,43 @@ session.dump_logs("authenticated-session.har")
 session.close()
 ```
 
+### 5. Complete Workflow with Analysis
+
+Here's a complete workflow that includes HAR analysis and cost estimation:
+
+```python
+from zapi import ZAPI, load_llm_credentials, analyze_har_file
+
+# Load credentials securely
+llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
+
+# Initialize ZAPI
+z = ZAPI(
+    client_id="YOUR_CLIENT_ID",
+    secret="YOUR_SECRET", 
+    llm_provider=llm_provider,
+    llm_api_key=llm_api_key,
+    llm_model_name=llm_model_name
+)
+
+# Capture session
+session = z.launch_browser(url="https://app.example.com")
+# ... navigate and interact ...
+session.dump_logs("session.har")
+session.close()
+
+# Analyze before upload with cost estimation
+stats, report, _ = analyze_har_file("session.har")
+print(f"Found {stats.valid_entries} API entries")
+print(f"Estimated cost: ${stats.estimated_cost_usd:.2f}")
+print(f"Estimated time: {stats.estimated_time_minutes:.1f} minutes")
+
+# Upload with confirmation
+if input("Upload? (y/n): ").lower() == 'y':
+    z.upload_har("session.har")
+    print("Upload completed!")
+```
+
 ## API Reference
 
 ### ZAPI Class
@@ -394,6 +474,41 @@ session.close()
 - `page_size` (int): Items per page (default: 10)
 - Returns: JSON with `items`, `total`, `page`, `page_size`, `total_pages`
 
+### HAR Analysis Functions
+
+**`analyze_har_file(har_file_path, save_filtered=False, filtered_output_path=None)`**
+- Comprehensive HAR file analysis with statistics and filtering
+- `har_file_path` (str): Path to the HAR file to analyze
+- `save_filtered` (bool): Whether to save a filtered HAR file with only API entries
+- `filtered_output_path` (str): Optional path for filtered HAR file (auto-generated if None)
+- Returns: `(HarStats, formatted_report, filtered_file_path)` tuple
+- Automatically excludes static assets and non-API content
+- Provides cost and time estimates for processing
+
+**`load_llm_credentials()`**
+- Load LLM credentials securely from environment variables or configuration
+- Returns: `(provider, api_key, model_name)` tuple
+- Supports .env files and fallback configuration
+
+**`HarProcessor(har_file_path)`**
+- Low-level HAR processing class for custom analysis
+- Methods: `load_and_process()`, `save_filtered_har()`, `get_summary_report()`
+
+### HarStats Object
+
+```python
+@dataclass
+class HarStats:
+    total_entries: int              # Total entries in HAR file
+    valid_entries: int              # API-relevant entries after filtering
+    skipped_entries: int            # Entries filtered out
+    unique_domains: int             # Number of unique domains
+    estimated_cost_usd: float       # Estimated processing cost
+    estimated_time_minutes: float   # Estimated processing time
+    skipped_by_reason: Dict[str, int]  # Breakdown by skip reason
+    domains: List[str]              # List of all domains found
+```
+
 ### BrowserSession Class
 
 | Method | Description |
@@ -413,8 +528,9 @@ ZAPI's workflow is simple but powerful:
 2. **LLM Key Encryption**: Encrypts your LLM API key for secure tool ingestion
 3. **Token Injection**: Automatically injects the Bearer token in all request headers
 4. **Traffic Capture**: Records complete network activity during browser interactions
-5. **Export**: Saves everything to standard HAR format compatible with Chrome DevTools
-6. **Documentation**: Uploads to adopt.ai with encrypted LLM metadata for enhanced API processing
+5. **Smart Analysis**: Filters HAR files to exclude static assets and estimate costs
+6. **Export**: Saves everything to standard HAR format compatible with Chrome DevTools
+7. **Documentation**: Uploads to adopt.ai with secured LLM metadata for enhanced API processing
 
 ## Use Cases
 
