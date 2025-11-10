@@ -1,0 +1,9 @@
+playwright>=1.40.0
+requests>=2.31.0
+cryptography>=41.0.0
+httpx>=0.25.0
+pydantic>=2.0.0
+python-dotenv>=1.0.0
+langchain>=1.0.0
+langchain-anthropic>=1.0.0
+langchain-openai>=1.0.0

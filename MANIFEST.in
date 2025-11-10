@@ -1,0 +1,19 @@
+# Include important files in the distribution
+include README.md
+include LICENSE
+include requirements.txt
+include CONTRIBUTING.md
+
+# Include all Python files in the package
+recursive-include zapi *.py
+
+# Include examples
+recursive-include examples *.py
+
+# Exclude development and build artifacts
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude *.har
+
