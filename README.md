@@ -29,10 +29,24 @@ playwright install
 
 **Requirements:** Python 3.9+, Playwright 1.40.0+, cryptography 41.0.0+
 
-## Quick Start
+## Environment Setup
+
+Before using ZAPI, set up your environment variables in a `.env` file:
+
+```bash
+# Required environment variables
+LLM_PROVIDER_API_KEY=your_llm_api_key_here
+LLM_PROVIDER=anthropic                    # anthropic, openai, google, groq
+LLM_MODEL_NAME=claude-3-5-sonnet-20241022 # model name for your provider
+ADOPT_CLIENT_ID=your_client_id_here       # Get from app.adopt.ai
+ADOPT_SECRET_KEY=your_secret_key_here     # Get from app.adopt.ai
+YOUR_API_URL=your_api_url_here           # Custom API URL
+```
 
 **Get Your Credentials:**
-Sign up at [app.adopt.ai](https://app.adopt.ai) to get your `client_id` and `secret` for OAuth authentication.
+Sign up at [app.adopt.ai](https://app.adopt.ai) to get your `ADOPT_CLIENT_ID` and `ADOPT_SECRET_KEY` for OAuth authentication.
+
+## Quick Start
 
 ```python
 from zapi import ZAPI, load_llm_credentials
