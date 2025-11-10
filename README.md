@@ -1,6 +1,35 @@
+<h3 align="center">
+  <a name="readme-top"></a>
+  <img
+    src="img/logo.png"
+    height="200"
+  >
+</h3>
+<div align="center">
+<a href="https://GitHub.com/adoptai/zapi/graphs/contributors">
+  <img src="https://img.shields.io/github/contributors/adoptai/zapi.svg" alt="GitHub Contributors">
+</a>
+<a href="https://www.adopt.ai">
+  <img src="https://img.shields.io/badge/Visit-Adopt.AI-blue" alt="Visit Adopt AI">
+</a>
+</div>
+<div>
+  <p align="center">
+    <a href="https://twitter.com/getadoptai">
+      <img src="https://img.shields.io/badge/Follow%20on%20X-000000?style=for-the-badge&logo=x&logoColor=white" alt="Follow on X" />
+    </a>
+    <a href="https://www.linkedin.com/company/getadoptai">
+      <img src="https://img.shields.io/badge/Follow%20on%20LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="Follow on LinkedIn" />
+    </a>
+    <a href="https://discord.com/invite/aVQayDgk">
+      <img src="https://img.shields.io/badge/Join%20our%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join our Discord" />
+    </a>
+  </p>
+</div>
+
 # ZAPI - Zero-Shot API Discovery
 
-ZAPI is an open-source Python library that automatically captures network traffic and API calls from web applications. Perfect for API discovery, LLM training datasets, and understanding how web apps communicate with backends.
+ZAPI by Adopt AI is an open-source Python library that automatically captures network traffic and API calls from web applications. Perfect for API discovery, LLM training datasets, and understanding how web apps communicate with backends.
 
 ## 🔑 Bring Your Own Key (BYOK)
 
