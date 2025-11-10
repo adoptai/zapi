@@ -249,6 +249,7 @@ interactive_chat(agent)
 
 ## How It Works
 
+```python
 try:
     z = ZAPI(
         client_id="invalid", 
