@@ -28,15 +28,7 @@ def main():
     try:
         # Initialize ZAPI with LLM credentials
         print(f"Initializing ZAPI with BYOK - {llm_provider} for enhanced API discovery...")
-        z = ZAPI(
-            client_id=client_id, 
-            secret=secret, 
-            llm_provider=llm_provider,
-            llm_model_name=llm_model_name,
-            llm_api_key=llm_api_key
-        )
-        print(f"Configured LLM provider: {z.get_llm_provider()}")
-        print(f"Configured LLM model name: {z.get_llm_model_name()}")
+        z = ZAPI()
         
         # Launch browser with enhanced error handling
         print(f"🌐 Launching browser and navigating to: {url}")

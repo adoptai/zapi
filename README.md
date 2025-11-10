@@ -49,19 +49,10 @@ Sign up at [app.adopt.ai](https://app.adopt.ai) to get your `ADOPT_CLIENT_ID` an
 ## Quick Start
 
 ```python
-from zapi import ZAPI, load_llm_credentials
+from zapi import ZAPI
 
-# Load LLM credentials from .env or configuration
-llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
-
-# Initialize with credentials and LLM configuration
-z = ZAPI(
-    client_id="YOUR_CLIENT_ID", 
-    secret="YOUR_SECRET",
-    llm_provider=llm_provider,           # e.g., "anthropic"
-    llm_model_name=llm_model_name,       # e.g., "claude-3-5-sonnet-20241022"
-    llm_api_key=llm_api_key              # Your API key
-)
+# Initialize ZAPI (automatically loads from .env file)
+z = ZAPI()
 
 # Launch browser and capture traffic
 session = z.launch_browser(url="https://app.example.com/dashboard")
