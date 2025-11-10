@@ -7,10 +7,10 @@ ZAPI is an open-source Python library that automatically captures network traffi
 ZAPI requires LLM API keys for enhanced API discovery. Your keys are secured and transmitted safely to our discovery service.
 
 **Supported Providers:**
-- **Groq**
 - **Anthropic**
 - **OpenAI**
 - **Google** 
+- **Groq**
 
 ## 📊 HAR Analysis & Cost Estimation
 
