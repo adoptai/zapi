@@ -173,12 +173,12 @@ class ZAPI:
             RuntimeError: If token validation fails or org_id extraction fails
         """
         # Use adopt.ai backend API for token validation
-        backend_url = "https://api.adopt.ai"  # Adjust if different
+        backend_url = "https://connect.adopt.ai"  # Adjust if different
         
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    f"{backend_url}/v1/users/validate-token",
+                    f"{backend_url}/v1/auth/validate-token",
                     headers={
                         "Authorization": f"Bearer {token}",
                         "Content-Type": "application/json"
@@ -188,9 +188,7 @@ class ZAPI:
                 
                 validation_result = response.json()
                 
-                if not validation_result.get('valid'):
-                    raise RuntimeError("Token validation failed")
-                
+                # API returns org_id and user_email directly on success
                 org_id = validation_result.get('org_id')
                 email = validation_result.get('user_email', "")
                 if not org_id or not isinstance(org_id, str):
@@ -411,7 +409,7 @@ class ZAPI:
             ZAPINetworkError: If upload fails due to network issues
             ZAPIAuthenticationError: If authentication fails
         """
-        url = "https://api.adopt.ai/v1/api-discovery/upload-file"
+        url = "https://connect.adopt.ai/v1/api-discovery/upload-file"
         
         headers = {
             "Authorization": f"Bearer {self.auth_token}"
