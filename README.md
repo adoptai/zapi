@@ -186,6 +186,27 @@ if input("Upload? (y/n): ").lower() == 'y':
     print("Upload completed!")
 ```
 
+## 🔗 LangChain Integration & Examples
+
+ZAPI provides seamless integration with LangChain, allowing you to automatically convert your documented APIs into LangChain tools for agent workflows.
+
+**📚 LangChain Examples:**
+- **[LangChain Integration Guide](examples/langchain/README.md)** - Complete guide to using ZAPI with LangChain agents
+- **[Demo Script](examples/langchain/demo.py)** - Interactive demo showing agent creation and usage
+
+**Quick LangChain Usage:**
+```python
+from langchain.agents import create_agent
+from zapi import ZAPI, interactive_chat
+
+# Initialize and create agent with your APIs as tools
+z = ZAPI()
+agent = create_agent(z.get_llm_model_name(), z.get_zapi_tools())
+
+# Start interactive chat with your APIs
+interactive_chat(agent)
+```
+
 ## API Reference
 
 ### ZAPI Class
