@@ -7,10 +7,10 @@ ZAPI is an open-source Python library that automatically captures network traffi
 ZAPI requires LLM API keys for enhanced API discovery. Your keys are secured and transmitted safely to our discovery service.
 
 **Supported Providers:**
-- **Groq**
 - **Anthropic**
 - **OpenAI**
 - **Google** 
+- **Groq**
 
 ## 📊 HAR Analysis & Cost Estimation
 
@@ -123,13 +123,7 @@ except HarProcessingError as e:
 
 ```python
 # Run with visible browser for debugging
-z = ZAPI(
-    client_id="YOUR_CLIENT_ID", 
-    secret="YOUR_SECRET",
-    llm_provider="anthropic",
-    llm_model_name="claude-3-5-sonnet-20241022",
-    llm_api_key="sk-ant-your-key"
-)
+z = ZAPI()
 session = z.launch_browser(url="https://app.example.com", headless=False)
 ```
 
@@ -138,14 +132,8 @@ session = z.launch_browser(url="https://app.example.com", headless=False)
 ```python
 from zapi import ZAPI
 
-# Initialize with LLM configuration
-z = ZAPI(
-    client_id="YOUR_CLIENT_ID",
-    secret="YOUR_SECRET",
-    llm_provider="anthropic",           # Supported: groq, anthropic, openai, google
-    llm_model_name="claude-3-5-sonnet-20241022",
-    llm_api_key="sk-ant-your-key"
-)
+# Initialize ZAPI (loads configuration from .env)
+z = ZAPI()
 
 # Check configuration
 print(f"Provider: {z.get_llm_provider()}")        # 'anthropic'
@@ -163,17 +151,10 @@ decrypted_key = z.get_decrypted_llm_key()  # Use carefully
 ### Complete Workflow with Analysis
 
 ```python
-from zapi import ZAPI, load_llm_credentials, analyze_har_file
+from zapi import ZAPI, analyze_har_file
 
-# Load credentials and initialize
-llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
-z = ZAPI(
-    client_id="YOUR_CLIENT_ID",
-    secret="YOUR_SECRET", 
-    llm_provider=llm_provider,
-    llm_model_name=llm_model_name,
-    llm_api_key=llm_api_key
-)
+# Initialize ZAPI (loads configuration from .env)
+z = ZAPI()
 
 # Capture session
 session = z.launch_browser(url="https://app.example.com")
@@ -312,19 +293,10 @@ When you provide LLM API keys, ZAPI enables enhanced API discovery capabilities:
 
 **Example Enhanced Workflow:**
 ```python
-from zapi import ZAPI, load_llm_credentials, analyze_har_file
+from zapi import ZAPI, analyze_har_file
 
-# Load credentials securely
-llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
-
-# Initialize with cost analysis
-z = ZAPI(
-    client_id="ID", 
-    secret="SECRET",
-    llm_provider=llm_provider,      # e.g., "anthropic"
-    llm_model_name=llm_model_name,  # e.g., "claude-3-5-sonnet-20241022"
-    llm_api_key=llm_api_key
-)
+# Initialize ZAPI (loads configuration from .env)
+z = ZAPI()
 
 # Capture session
 session = z.launch_browser(url="https://app.example.com")
