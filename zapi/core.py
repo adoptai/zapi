@@ -4,11 +4,12 @@ import asyncio
 import json
 import requests
 import httpx
-from typing import Optional, Dict, Any, List, Callable
+from typing import Optional, List, Callable
 from .session import BrowserSession
 from .providers import validate_llm_keys
 from .encryption import LLMKeyEncryption
 from .utils import load_zapi_credentials
+from .constants import BASE_URL
 
 
 class ZAPIError(Exception):
@@ -111,7 +112,7 @@ class ZAPI:
         Raises:
             RuntimeError: If token fetch fails or org_id extraction fails
         """
-        url = "https://connect.adopt.ai/v1/auth/token"
+        url = f"{BASE_URL}/v1/auth/token"
         payload = {
             "clientId": self.client_id,
             "secret": self.secret
@@ -173,12 +174,10 @@ class ZAPI:
             RuntimeError: If token validation fails or org_id extraction fails
         """
         # Use adopt.ai backend API for token validation
-        backend_url = "https://connect.adopt.ai"  # Adjust if different
-        
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    f"{backend_url}/v1/auth/validate-token",
+                    f"{BASE_URL}/v1/auth/validate-token",
                     headers={
                         "Authorization": f"Bearer {token}",
                         "Content-Type": "application/json"
@@ -409,7 +408,7 @@ class ZAPI:
             ZAPINetworkError: If upload fails due to network issues
             ZAPIAuthenticationError: If authentication fails
         """
-        url = "https://connect.adopt.ai/v1/api-discovery/upload-file"
+        url = f"{BASE_URL}/v1/api-discovery/upload-file"
         
         headers = {
             "Authorization": f"Bearer {self.auth_token}"
@@ -498,7 +497,7 @@ class ZAPI:
         Raises:
             requests.exceptions.RequestException: If the request fails
         """
-        url = "https://connect.adopt.ai/v1/tools/apis"
+        url = f"{BASE_URL}/v1/tools/apis"
         headers = {
             "Authorization": f"Bearer {self.auth_token}"
         }
