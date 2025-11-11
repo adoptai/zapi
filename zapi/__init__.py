@@ -31,6 +31,7 @@ from .utils import (
     load_llm_credentials, 
     interactive_chat,
 )
+from .constants import BASE_URL
 
 __version__ = "0.1.0"
 __all__ = [
@@ -53,6 +54,7 @@ __all__ = [
     "BrowserSessionError",
     "BrowserNavigationError", 
     "BrowserInitializationError",
-    "HarProcessingError"
+    "HarProcessingError",
+    "BASE_URL",
 ]
 
