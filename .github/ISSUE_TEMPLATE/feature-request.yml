@@ -1,0 +1,147 @@
+name: "🚀 Feature Request"
+description: "Suggest a new feature or improvement for ZAPI"
+title: "[Feature]: <Short description>"
+labels: ["feature-request", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🚀 Feature Request
+        Have an idea that can make ZAPI better? Please describe it below as clearly as possible.  
+        The more context you give, the easier it is for us to prioritize and implement!
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Area of Improvement"
+      description: "Which part of ZAPI does this request relate to?"
+      options:
+        - Browser Session / Playwright Integration
+        - HAR Processing / Analysis
+        - LLM Provider Support
+        - LangChain Integration
+        - Authentication / Security
+        - API Discovery Features
+        - Documentation
+        - Developer Experience
+        - Other
+      default: 0
+    validations:
+      required: true
+
+  - type: input
+    id: feature_title
+    attributes:
+      label: "Feature Name"
+      description: "Short descriptive name for the feature"
+      placeholder: "Add support for Gemini LLM provider"
+    validations:
+      required: true
+
+  - type: textarea
+    id: feature_description
+    attributes:
+      label: "Describe the Feature"
+      description: "What would you like to see added or improved?"
+      placeholder: |
+        I'd like ZAPI to support Google's Gemini API as an LLM provider for API discovery, 
+        similar to how it currently supports Anthropic, OpenAI, Google, and Groq.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_case
+    attributes:
+      label: "Use Case / Motivation"
+      description: "Explain why this feature is valuable. What problem does it solve?"
+      placeholder: |
+        - My team uses Gemini for all LLM tasks and wants consistency
+        - Gemini offers better pricing for our use case
+        - We need multi-modal capabilities for API documentation
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: "Proposed Solution or API Design (Optional)"
+      description: "How would you like this to work? Feel free to propose code examples."
+      placeholder: |
+        Example usage:
+        ```python
+        from zapi import ZAPI
+        
+        z = ZAPI(
+            llm_provider="gemini",
+            llm_model_name="gemini-1.5-pro",
+            llm_api_key="your-gemini-key"
+        )
+        
+        session = z.launch_browser(url="https://example.com")
+        # ... rest of workflow
+        ```
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: "Priority (from your perspective)"
+      description: "How important is this feature to you?"
+      options:
+        - Critical - Blocking my workflow
+        - High - Would significantly improve my experience
+        - Medium - Nice to have
+        - Low - Just an idea
+      default: 2
+
+  - type: checkboxes
+    id: impact_scope
+    attributes:
+      label: "Who does this impact?"
+      options:
+        - label: "Python developers using ZAPI"
+        - label: "LangChain users"
+        - label: "API discovery workflows"
+        - label: "HAR processing pipelines"
+        - label: "Security / BYOK users"
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "Have you considered any workarounds or alternative approaches?"
+      placeholder: |
+        - Currently using OpenAI but prefer Gemini
+        - Manual HAR processing with custom scripts
+
+  - type: textarea
+    id: related_issues
+    attributes:
+      label: "Related Issues / References"
+      description: "Link any related GitHub issues, docs, or external resources"
+      placeholder: "#42, https://ai.google.dev/gemini-api/docs"
+
+  - type: checkboxes
+    id: willingness
+    attributes:
+      label: "Would you like to contribute to this feature?"
+      options:
+        - label: "Yes, I can help implement it"
+        - label: "Maybe, I can help test or review"
+        - label: "No, just sharing the idea"
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: "Additional Context"
+      description: "Any extra information, mockups, code samples, or screenshots"
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Pre-submission Checklist"
+      options:
+        - label: "I have searched existing issues to avoid duplicates"
+          required: true
+        - label: "I have checked the documentation to ensure this isn't already supported"
+          required: true
+
