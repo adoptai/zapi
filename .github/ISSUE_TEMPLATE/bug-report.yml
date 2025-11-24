@@ -1,0 +1,166 @@
+name: "🐞 Bug Report"
+description: "Report a bug or unexpected behavior in ZAPI"
+title: "[Bug]: <Short description>"
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🐞 Bug Report
+        Thanks for taking the time to report a bug! Please provide as much detail as possible to help us investigate and fix it quickly.
+
+  - type: input
+    id: zapi_version
+    attributes:
+      label: "ZAPI Version"
+      description: "Version of ZAPI you're using (check with `pip show zapi`)"
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python_version
+    attributes:
+      label: "Python Version"
+      description: "Python version and operating system"
+      placeholder: "Python 3.11 on macOS 14.2 or Python 3.9 on Ubuntu 22.04"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Component"
+      description: "Which part of ZAPI is affected?"
+      options:
+        - Browser Session / Playwright
+        - HAR Processing / Analysis
+        - LLM Key Management / BYOK
+        - LangChain Integration
+        - Authentication / OAuth
+        - File Upload
+        - Other
+      default: 0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Where did this issue occur?"
+      options:
+        - Local Development
+        - CI/CD Pipeline
+        - Docker Container
+        - Cloud Deployment
+        - Other
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe the Bug"
+      description: "What happened? What did you expect to happen instead?"
+      placeholder: |
+        When calling `z.launch_browser(url="https://example.com")`, the browser crashes immediately.
+        Expected: Browser should launch and navigate to the URL successfully.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: "Steps to Reproduce"
+      description: "Please include exact steps or code to reproduce the issue"
+      placeholder: |
+        1. Initialize ZAPI with valid credentials
+        2. Call `z.launch_browser(url="https://example.com")`
+        3. Browser crashes with error
+    validations:
+      required: true
+
+  - type: textarea
+    id: code_snippet
+    attributes:
+      label: "Minimal Reproducible Example"
+      description: "Paste code to reproduce (remove sensitive data like API keys)"
+      placeholder: |
+        ```python
+        from zapi import ZAPI
+        
+        z = ZAPI()
+        session = z.launch_browser(url="https://example.com")
+        session.dump_logs("session.har")
+        session.close()
+        ```
+      render: python
+
+  - type: textarea
+    id: error_logs
+    attributes:
+      label: "Error Output / Stack Trace"
+      description: "Paste the full error output or traceback"
+      render: shell
+      placeholder: |
+        Traceback (most recent call last):
+          File "demo.py", line 10, in <module>
+            session = z.launch_browser(url="https://example.com")
+          File "zapi/core.py", line 367, in launch_browser
+            raise ZAPIError(f"Failed to launch browser session: {error_message}")
+        zapi.core.ZAPIError: Failed to launch browser session: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: "Evidence / Demo"
+      description: "Provide screenshots, video recording, or terminal output showing the issue"
+      placeholder: |
+        - Screenshot: [Attach image]
+        - Video: [Link to Loom/YouTube]
+        - Terminal output: [Paste relevant logs]
+        - HAR file snippet: [If applicable]
+
+  - type: checkboxes
+    id: reproducibility
+    attributes:
+      label: "Reproducibility"
+      description: "How consistently does the bug occur?"
+      options:
+        - label: "Always reproducible"
+        - label: "Intermittent / Sometimes"
+        - label: "Happened once, can't reproduce"
+
+  - type: textarea
+    id: environment_details
+    attributes:
+      label: "Environment Details"
+      description: "Additional environment information (optional)"
+      placeholder: |
+        - Playwright version: 1.40.0
+        - Browser: Chromium 120.0.6099.109
+        - LLM Provider: anthropic
+        - Headless mode: True/False
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: "Additional Context or Screenshots"
+      description: "Add logs, screenshots, HAR files, or related issues if available"
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: "Pre-submission Checklist"
+      options:
+        - label: "I have searched existing issues to avoid duplicates"
+          required: true
+        - label: "I have removed sensitive data (API keys, tokens) from code snippets"
+          required: true
+        - label: "I have tested with the latest version of ZAPI"
+          required: false
+
