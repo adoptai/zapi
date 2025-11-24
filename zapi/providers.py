@@ -11,6 +11,8 @@ Currently supported providers:
 from enum import Enum
 from typing import Dict, Set
 
+from .exceptions import LLMKeyException
+
 
 class LLMProvider(Enum):
     """
@@ -39,93 +41,95 @@ class LLMProvider(Enum):
 def validate_llm_keys(llm_keys: Dict[str, str]) -> Dict[str, str]:
     """
     Validate LLM keys dictionary for supported providers.
-    
+
     Supports the 4 main LLM providers with specific validation for each.
-    
+
     Args:
         llm_keys: Dictionary mapping provider names to API keys
                  Example: {"anthropic": "sk-ant-...", "openai": "sk-...", "groq": "gsk_..."}
-        
+
     Returns:
         Validated and normalized keys dictionary
-        
+
     Raises:
-        ValueError: If keys format is invalid or providers are unsupported
+        LLMKeyException: If keys format is invalid or providers are unsupported
     """
     if not isinstance(llm_keys, dict):
-        raise ValueError("llm_keys must be a dictionary")
-    
+        raise LLMKeyException("llm_keys must be a dictionary")
+
     if not llm_keys:
-        raise ValueError("llm_keys cannot be empty")
-    
+        raise LLMKeyException("llm_keys cannot be empty")
+
     validated_keys = {}
 
     supported_providers = ", ".join(LLMProvider.get_all_providers())
-    
+
     for provider, api_key in llm_keys.items():
         # Normalize provider name to lowercase
         provider_normalized = provider.lower()
-        
+
         # Validate provider is supported
         if not LLMProvider.is_valid_provider(provider_normalized):
-            raise ValueError(
+            raise LLMKeyException(
                 f"Unsupported LLM provider: '{provider}'. "
                 f"Supported providers: {supported_providers}"
             )
-        
+
         # Validate API key format
         if not isinstance(api_key, str) or not api_key.strip():
-            raise ValueError(f"API key for provider '{provider}' must be a non-empty string")
-        
+            raise LLMKeyException(f"API key for provider '{provider}' must be a non-empty string")
+
+        _validate_key_format(provider_normalized, api_key.strip())
+
         validated_keys[provider_normalized] = api_key.strip()
-    
+
     return validated_keys
 
 
 def _validate_key_format(provider: str, api_key: str) -> None:
     """
     Validate API key format for specific providers.
-    
+
     All 4 main providers receive specific validation tailored to their API key formats.
-    
+
     Args:
         provider: Provider name (normalized to lowercase)
         api_key: API key to validate
-        
+
     Raises:
-        ValueError: If key format is invalid for the provider
+        LLMKeyException: If key format is invalid for the provider
     """
     # Main supported providers - specific validation for each
     if provider == LLMProvider.ANTHROPIC.value:
         if not api_key.startswith("sk-ant-"):
-            raise ValueError("Anthropic API keys must start with 'sk-ant-'")
+            raise LLMKeyException("Anthropic API keys must start with 'sk-ant-'")
         if len(api_key) < 20:
-            raise ValueError("Anthropic API keys must be at least 20 characters long")
-    
+            raise LLMKeyException("Anthropic API keys must be at least 20 characters long")
+
     elif provider == LLMProvider.OPENAI.value:
         if not api_key.startswith("sk-"):
-            raise ValueError("OpenAI API keys must start with 'sk-'")
+            raise LLMKeyException("OpenAI API keys must start with 'sk-'")
         if len(api_key) < 20:
-            raise ValueError("OpenAI API keys must be at least 20 characters long")
-    
+            raise LLMKeyException("OpenAI API keys must be at least 20 characters long")
+
     elif provider == LLMProvider.GOOGLE.value:
         # Google API keys are typically 39 characters and alphanumeric + hyphens
         if len(api_key) < 20:
-            raise ValueError("Google API keys must be at least 20 characters long")
-    
+            raise LLMKeyException("Google API keys must be at least 20 characters long")
+
     elif provider == LLMProvider.GROQ.value:
         if not api_key.startswith("gsk_"):
-            raise ValueError("Groq API keys must start with 'gsk_'")
+            raise LLMKeyException("Groq API keys must start with 'gsk_'")
         if len(api_key) < 20:
-            raise ValueError("Groq API keys must be at least 20 characters long")
-    
+            raise LLMKeyException("Groq API keys must be at least 20 characters long")
+
     # Generic validation for all providers
     if len(api_key) < 10:
-        raise ValueError(f"API key for {provider} is too short (minimum 10 characters)")
-    
+        raise LLMKeyException(f"API key for {provider} is too short (minimum 10 characters)")
+
     # Additional validation: ensure key contains only valid characters
     if not api_key.replace("-", "").replace("_", "").replace(".", "").isalnum():
-        raise ValueError(f"API key for {provider} contains invalid characters")
+        raise LLMKeyException(f"API key for {provider} contains invalid characters")
 
 
 def get_provider_display_name(provider: str) -> str:

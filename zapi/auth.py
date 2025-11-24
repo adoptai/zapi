@@ -3,6 +3,8 @@
 from typing import Literal
 from playwright.async_api import Page, BrowserContext
 
+from .exceptions import AuthException
+
 
 AuthMode = Literal["localStorage", "cookie", "header"]
 
@@ -53,9 +55,7 @@ async def apply_header_auth(context: BrowserContext, token: str) -> None:
         context: Playwright browser context
         token: Authentication token (will be added as "Bearer <token>")
     """
-    await context.set_extra_http_headers({
-        "Authorization": f"Bearer {token}"
-    })
+    await context.set_extra_http_headers({"Authorization": f"Bearer {token}"})
 
 
 def get_auth_handler(auth_mode: AuthMode):
@@ -64,24 +64,23 @@ def get_auth_handler(auth_mode: AuthMode):
     
     Args:
         auth_mode: Authentication mode ("localStorage", "cookie", or "header")
-        
+    
     Returns:
         Corresponding auth handler function
-        
+    
     Raises:
-        ValueError: If auth_mode is not recognized
+        AuthException: If auth_mode is not recognized
     """
     handlers = {
         "localStorage": apply_localStorage_auth,
         "cookie": apply_cookie_auth,
         "header": apply_header_auth,
     }
-    
+
     if auth_mode not in handlers:
-        raise ValueError(
+        raise AuthException(
             f"Invalid auth_mode: {auth_mode}. "
             f"Must be one of: {', '.join(handlers.keys())}"
         )
-    
-    return handlers[auth_mode]
 
+    return handlers[auth_mode]

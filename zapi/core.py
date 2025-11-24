@@ -10,9 +10,10 @@ from .providers import validate_llm_keys
 from .encryption import LLMKeyEncryption
 from .utils import load_zapi_credentials
 from .constants import BASE_URL
+from .exceptions import ZapiException, AuthException, LLMKeyException, NetworkException
 
 
-class ZAPIError(Exception):
+class ZAPIError(ZapiException):
     """Base exception class for ZAPI errors."""
     pass
 
@@ -143,23 +144,32 @@ class ZAPI:
                 asyncio.set_event_loop(loop)
             
             org_id, email = loop.run_until_complete(self._validate_token_and_extract_org_id(token))
-            
+
             return token, org_id, email
-                
+
         except requests.exceptions.Timeout:
-            raise ZAPINetworkError("Authentication request timed out. Please check your internet connection.")
+            raise NetworkException("Authentication request timed out. Please check your internet connection.")
         except requests.exceptions.ConnectionError:
-            raise ZAPINetworkError("Cannot connect to adopt.ai authentication service. Please check your internet connection.")
+            raise NetworkException("Cannot connect to adopt.ai authentication service. Please check your internet connection.")
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
-                raise ZAPIAuthenticationError("Invalid client_id or secret. Please check your credentials.")
+                error_message = (
+                    "Authentication Error: Invalid credentials\\n\\n"
+                    "Your ADOPT_CLIENT_ID or ADOPT_SECRET_KEY appears to be incorrect.\\n\\n"
+                    "Please check:\\n"
+                    "1. Your .env file has the correct credentials\\n"
+                    "2. Get valid credentials from https://app.adopt.ai\\n"
+                    "3. Ensure no extra spaces in your .env file\\n\\n"
+                    "Need help? See: https://docs.zapi.ai/authentication"
+                )
+                raise AuthException(error_message)
             elif e.response.status_code == 403:
-                raise ZAPIAuthenticationError("Access forbidden. Please check your account permissions.")
+                raise AuthException("Access forbidden. Please check your account permissions.")
             else:
-                raise ZAPIAuthenticationError(f"Authentication failed: HTTP {e.response.status_code}")
+                raise AuthException(f"Authentication failed: HTTP {e.response.status_code}")
         except requests.exceptions.RequestException as e:
-            raise ZAPINetworkError(f"Failed to fetch authentication token: {e}")
-    
+            raise NetworkException(f"Failed to fetch authentication token: {e}")
+
     async def _validate_token_and_extract_org_id(self, token: str) -> str:
         """
         Validate JWT token via backend API and extract org_id.
@@ -200,18 +210,18 @@ class ZAPI:
                 
             except httpx.HTTPStatusError as e:
                 if e.response.status_code == 401:
-                    raise ZAPIAuthenticationError("Token validation failed: Invalid or expired token")
+                    raise AuthException("Token validation failed: Invalid or expired token")
                 elif e.response.status_code == 403:
-                    raise ZAPIAuthenticationError("Token validation failed: Access forbidden")
+                    raise AuthException("Token validation failed: Access forbidden")
                 else:
-                    raise ZAPINetworkError(f"Backend token validation failed: HTTP {e.response.status_code}")
+                    raise NetworkException(f"Backend token validation failed: HTTP {e.response.status_code}")
             except httpx.ConnectTimeout:
-                raise ZAPINetworkError("Token validation timed out. Please check your internet connection.")
+                raise NetworkException("Token validation timed out. Please check your internet connection.")
             except httpx.RequestError as e:
-                raise ZAPINetworkError(f"Token validation request failed: {e}")
+                raise NetworkException(f"Token validation request failed: {e}")
             except Exception as e:
                 raise ZAPIError(f"Token validation error: {e}")
-    
+
     def set_llm_key(self, provider: str, api_key: str, model_name: str) -> None:
         """
         Set LLM API key for a specific provider.
@@ -235,9 +245,9 @@ class ZAPI:
             validated_keys = validate_llm_keys({provider: api_key})
             validated_provider = list(validated_keys.keys())[0]
             validated_key = list(validated_keys.values())[0]
-        except ValueError as e:
-            raise ZAPIValidationError(f"LLM key validation failed: {e}")
-        
+        except LLMKeyException as e:
+            raise LLMKeyException(f"LLM key validation failed: {e}")
+
         # Encrypt only the API key using org_id (provider stored separately)
         try:
             self._encrypted_llm_key = self._key_encryptor.encrypt_key(validated_key)
@@ -374,17 +384,17 @@ class ZAPI:
                     "Please check the URL format and ensure it's accessible."
                 )
             elif "net::ERR_NAME_NOT_RESOLVED" in error_message:
-                raise ZAPINetworkError(
+                raise NetworkException(
                     f"Domain name could not be resolved: '{url}'. "
                     "Please check the URL spelling and your internet connection."
                 )
             elif "net::ERR_CONNECTION_REFUSED" in error_message:
-                raise ZAPINetworkError(
+                raise NetworkException(
                     f"Connection refused to: '{url}'. "
                     "The server may be down or the URL may be incorrect."
                 )
             elif "Timeout" in error_message:
-                raise ZAPINetworkError(
+                raise NetworkException(
                     f"Timeout while loading: '{url}'. "
                     "The website took too long to respond. Please try again or use a different URL."
                 )
@@ -455,21 +465,21 @@ class ZAPI:
         except PermissionError:
             raise ZAPIValidationError(f"Permission denied reading HAR file: '{har_file}'")
         except requests.exceptions.Timeout:
-            raise ZAPINetworkError("Upload request timed out. Please try again.")
+            raise NetworkException("Upload request timed out. Please try again.")
         except requests.exceptions.ConnectionError:
-            raise ZAPINetworkError("Cannot connect to ZAPI upload service. Please check your internet connection.")
+            raise NetworkException("Cannot connect to ZAPI upload service. Please check your internet connection.")
         except requests.exceptions.HTTPError as e:
             if e.response.status_code == 401:
-                raise ZAPIAuthenticationError("Upload failed: Invalid or expired authentication token")
+                raise AuthException("Upload failed: Invalid or expired authentication token")
             elif e.response.status_code == 413:
                 raise ZAPIValidationError("HAR file is too large. Please try with a smaller session.")
             elif e.response.status_code == 400:
                 raise ZAPIValidationError("Invalid HAR file format. Please ensure the file was generated correctly.")
             else:
-                raise ZAPINetworkError(f"Upload failed: HTTP {e.response.status_code}")
+                raise NetworkException(f"Upload failed: HTTP {e.response.status_code}")
         except requests.exceptions.RequestException as e:
-            raise ZAPINetworkError(f"Upload request failed: {e}")
-        
+            raise NetworkException(f"Upload request failed: {e}")
+
         try:
             response.raise_for_status()
             print("file uploaded successfully")
