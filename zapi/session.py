@@ -376,10 +376,17 @@ class BrowserSession:
                 shutil.copy(self._har_path, filepath)
                 
                 # Verify the copy was successful
-                if not Path(filepath).exists():
+                if not dest_path.exists():
                     raise BrowserSessionError(
                         f"Failed to create HAR file at: '{filepath}'"
                     )
+                
+                # Provide immediate feedback about HAR size post-save
+                file_size_mb = dest_path.stat().st_size / (1024 * 1024)
+                print(f"HAR file saved to '{dest_path}' ({file_size_mb:.1f} MB)")
+                if file_size_mb > 100:
+                    print("⚠️  Large HAR files (>100 MB) may lead to unexpected upload issues.")
+                    print("   Consider using the filtering utilities in 'zapi.har_processing' to trim the HAR before uploading.")
                 
                 # Clean up temporary file
                 self._har_path.unlink()

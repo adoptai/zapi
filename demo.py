@@ -1,8 +1,11 @@
 #!/usr/bin/env python
-"""ZAPI Demo Script"""
+"""ZAPI Demo Script showing capture, analysis, and upload."""
+
+from pathlib import Path
+from typing import Optional
+
 from zapi import (
-    ZAPI, 
-    load_llm_credentials,
+    ZAPI,
     analyze_har_file,
     ZAPIError,
     ZAPIAuthenticationError,
@@ -11,99 +14,107 @@ from zapi import (
     BrowserSessionError,
     BrowserNavigationError,
     BrowserInitializationError,
-    HarProcessingError
+    HarProcessingError,
 )
 
+# ---------------------------------------------------------------------------
+# Quick configuration – edit these defaults before running the script.
+# ---------------------------------------------------------------------------
+DEMO_URL = "<INSERT_URL_HERE>"
+OUTPUT_FILE = Path("demo_session.har")
+HEADLESS_BROWSER = False
 
-def main():
-    client_id = "CLIENT_ID"
-    secret = "SECRET_KEY"
-    url = "URL"
-    output_file = "OUTPUT_FILE.har"
-    
-    # Load LLM credentials securely from .env or fallback to code
-    print("🔐 Loading LLM credentials...")
-    llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
-    
+
+def record_session(zapi_client: ZAPI, url: str, output_path: Path) -> None:
+    """Record a HAR file by letting the user drive the browser."""
+    print(f"🌐 Launching browser and navigating to: {url}")
+    session = zapi_client.launch_browser(url=url, headless=HEADLESS_BROWSER)
     try:
-        # Initialize ZAPI with LLM credentials
-        print(f"Initializing ZAPI with BYOK - {llm_provider} for enhanced API discovery...")
-        z = ZAPI(
-            client_id=client_id, 
-            secret=secret, 
-            llm_provider=llm_provider,
-            llm_model_name=llm_model_name,
-            llm_api_key=llm_api_key
-        )
-        print(f"Configured LLM provider: {z.get_llm_provider()}")
-        print(f"Configured LLM model name: {z.get_llm_model_name()}")
-        
-        # Launch browser with enhanced error handling
-        print(f"🌐 Launching browser and navigating to: {url}")
-        session = z.launch_browser(url=url, headless=False)
-        
         print("✅ Browser launched successfully!")
-        input("📋 Navigate around the app, then press ENTER when done navigating and want to save the session...")
-        
+        input("📋 Use the browser freely, then press ENTER to save the HAR...")
+
         print("💾 Saving session logs...")
-        session.dump_logs(output_file)
-        print(f"✅ Session saved to: {output_file}")
-        
-        # Analyze HAR file before uploading
-        print("\n🔍 Analyzing HAR file...")
-        upload_file = output_file  # Default to original file
-        
-        try:
-            # Analyze HAR file without saving filtered version
-            stats, report, _ = analyze_har_file(output_file, save_filtered=False)
-            
-            # Show simplified analysis - only valid entries, cost and time
-            print("\n📊 HAR Analysis Results:")
-            print(f"   ✅ API-relevant entries: {stats.valid_entries:,}")
-            print(f"   💰 Estimated cost: ${stats.estimated_cost_usd:.2f}")
-            print(f"   ⏱️  Estimated processing time: {round(stats.estimated_time_minutes)} minutes")
-            
-            # Confirmation prompt for upload  
-            print(f"\n💡 Ready to upload HAR file with estimated cost of ${stats.estimated_cost_usd:.2f}")
-            user_input = input("Press ENTER to proceed with upload, or 'n' to skip: ").strip().lower()
-            
-            if user_input == 'n':
-                print("⏹️ Upload cancelled by user")
-                session.close()
-                return 0
-                
-        except HarProcessingError as e:
-            print(f"⚠️ HAR analysis failed: {e}")
-            print("Proceeding with upload anyway...")
-            upload_file = output_file
-        
-        print("\n☁️ Uploading HAR file...")
-        z.upload_har(upload_file)
-        print("✅ HAR file uploaded successfully!")
-        
-        # print the decrypted LLM key 
-        # print(f"Decrypted LLM key: {z.get_decrypted_llm_key()}")
+        session.dump_logs(str(output_path))
+        print(f"✅ Session saved to: {output_path}")
+    finally:
         session.close()
+        print("🧹 Browser session closed.")
+
+
+def analyze_har_file_with_filter(source_path: Path) -> Optional[Path]:
+    """Analyze the HAR and produce a filtered file for API-only calls."""
+    print("\n🔍 Analyzing HAR file...")
+    try:
+        stats, report, filtered_path = analyze_har_file(str(source_path), save_filtered=True)
+    except HarProcessingError as exc:
+        print(f"⚠️ HAR analysis failed: {exc}")
+        print("   Continuing with the original HAR.")
+        return None
+
+    print("\n📊 HAR Analysis Results:")
+    print(f"   ✅ API-relevant entries: {stats.valid_entries:,}")
+    print(f"   💰 Estimated cost: ${stats.estimated_cost_usd:.2f}")
+    print(f"   ⏱️  Estimated processing time: {round(stats.estimated_time_minutes)} minutes")
+    if filtered_path:
+        print(f"   🧹 Filtered HAR saved to: {filtered_path}")
+    return Path(filtered_path).resolve() if filtered_path else None
+
+
+def pick_upload_file(original_path: Path, filtered_path: Optional[Path]) -> Path:
+    """Interactively choose whether to upload the original or filtered HAR."""
+    if filtered_path:
+        print("\nYou now have two files available:")
+        print(f"  1. Original HAR : {original_path}")
+        print(f"  2. Filtered HAR : {filtered_path}")
+        choice = input("Upload filtered HAR? (Y/n): ").strip().lower()
+        if choice in ("", "y", "yes"):
+            print("📤 Using filtered HAR for upload.")
+            return filtered_path
+        print("📤 Using original HAR for upload.")
+        return original_path
+
+    print("\nFiltered HAR not available, defaulting to the original file.")
+    return original_path
+
+
+def main() -> int:
+    print("🚀 Starting ZAPI demo...")
+    url = DEMO_URL
+    output_path = OUTPUT_FILE.expanduser().resolve()
+
+    try:
+        z = ZAPI()
+        record_session(z, url, output_path)
+
+        filtered_path = analyze_har_file_with_filter(output_path)
+        upload_path = pick_upload_file(output_path, filtered_path)
+
+        confirm = input("\n💡 Ready to upload. Press ENTER to continue or 'n' to cancel: ").strip().lower()
+        if confirm in {"n", "no"}:
+            print("⏹️ Upload cancelled by user.")
+            return 0
+
+        print("\n☁️ Uploading HAR file...")
+        z.upload_har(str(upload_path))
+        print("✅ HAR file uploaded successfully!")
         print("🎉 Demo completed successfully!")
-        
+
     except ZAPIValidationError as e:
         print("❌ Configuration Validation Error:")
         print(f"   {str(e)}")
         print("💡 Please check your input values:")
         print(f"   - URL: '{url}' (should be like 'https://example.com')")
-        print(f"   - Output file: '{output_file}' (should end with '.har')")
+        print(f"   - Output file: '{output_path}' (should end with '.har')")
         print("   Make sure to replace placeholder values with actual ones.")
         return 1
-        
+
     except ZAPIAuthenticationError as e:
         print("❌ Authentication Error:")
         print(f"   {str(e)}")
         print("💡 Please check your credentials:")
-        print(f"   - Client ID: {client_id}")
-        print("   - Secret: [HIDDEN]")
         print("   - Make sure your account is active and has proper permissions")
         return 1
-        
+
     except ZAPINetworkError as e:
         print("❌ Network Error:")
         print(f"   {str(e)}")
@@ -113,7 +124,7 @@ def main():
         print("   - Firewall or proxy blocking the connection")
         print("   - DNS resolution problems")
         return 1
-        
+
     except BrowserNavigationError as e:
         print("❌ Browser Navigation Error:")
         print(f"   {str(e)}")
@@ -123,7 +134,7 @@ def main():
         print("   - Try a different URL for testing")
         print("   - Check your internet connection")
         return 1
-        
+
     except BrowserInitializationError as e:
         print("❌ Browser Initialization Error:")
         print(f"   {str(e)}")
@@ -132,7 +143,7 @@ def main():
         print("   - System permissions issues")
         print("   - Insufficient system resources")
         return 1
-        
+
     except BrowserSessionError as e:
         print("❌ Browser Session Error:")
         print(f"   {str(e)}")
@@ -141,7 +152,7 @@ def main():
         print("   - Check if the browser window is responsive")
         print("   - Ensure sufficient disk space for HAR files")
         return 1
-        
+
     except HarProcessingError as e:
         print("❌ HAR Processing Error:")
         print(f"   {str(e)}")
@@ -150,13 +161,13 @@ def main():
         print("   - Ensure the file is not corrupted or empty")
         print("   - Try generating a new session")
         return 1
-        
+
     except ZAPIError as e:
         print("❌ ZAPI Error:")
         print(f"   {str(e)}")
         print("💡 This is a general ZAPI error. Please check your configuration.")
         return 1
-        
+
     except Exception as e:
         print("❌ Unexpected Error:")
         print(f"   {str(e)}")
@@ -165,7 +176,7 @@ def main():
         print("   - Try running the script again")
         print("   - Contact support if the issue persists")
         return 1
-    
+
     return 0
 
 if __name__ == "__main__":
