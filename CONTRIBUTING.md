@@ -57,7 +57,13 @@ Thank you for your interest in contributing to ZAPI! This document provides guid
    # Edit .env with your credentials from app.adopt.ai
    ```
 
-6. Test the installation:
+6. Install Ruff for linting and formatting:
+
+   ```bash
+   pip install ruff
+   ```
+
+7. Test the installation:
 
    ```bash
    python demo.py
@@ -75,13 +81,50 @@ python examples/langchain/demo.py
 
 # Test HAR processing
 python -c "from zapi import analyze_har_file; analyze_har_file('demo_session.har')"
-
-# Format code (if using black)
-black zapi/ examples/ demo.py
-
-# Lint code (if using pylint)
-pylint zapi/
 ```
+
+### Code Quality Tools
+
+ZAPI uses [Ruff](https://docs.astral.sh/ruff/) for fast linting and formatting. All PRs are automatically checked via GitHub Actions.
+
+**Run linting checks:**
+
+```bash
+# Check for linting issues
+ruff check .
+
+# Auto-fix linting issues
+ruff check . --fix
+```
+
+**Run formatting checks:**
+
+```bash
+# Check if code is formatted correctly
+ruff format --check .
+
+# Format code automatically
+ruff format .
+```
+
+**Before submitting a PR:**
+
+```bash
+# Run both checks (same as CI)
+ruff check .
+ruff format --check .
+
+# Or fix everything automatically
+ruff check . --fix
+ruff format .
+```
+
+**Configuration:**
+
+Ruff settings are defined in `pyproject.toml`. Key settings:
+- Line length: 120 characters
+- Target: Python 3.9+
+- Enabled rules: pycodestyle, pyflakes, isort, pep8-naming, pyupgrade, flake8-bugbear, and more
 
 ## Project Structure
 
@@ -315,8 +358,10 @@ When creating example scripts:
 - Write clear commit messages
 - Include tests if applicable
 - Update documentation
-- Ensure code passes linting
+- **Ensure code passes Ruff checks** (`ruff check .` and `ruff format --check .`)
 - Respond to review comments promptly
+
+**Note:** All PRs are automatically checked by GitHub Actions for code quality using Ruff. Make sure to run the checks locally before submitting to avoid CI failures.
 
 ## Adding New LLM Providers
 
@@ -393,7 +438,8 @@ Before submitting a PR, verify:
 - [ ] Error messages are clear and helpful
 - [ ] Documentation is updated
 - [ ] No sensitive data in code or commits
-- [ ] Code follows style guidelines
+- [ ] **Code passes Ruff linting** (`ruff check .`)
+- [ ] **Code is properly formatted** (`ruff format --check .`)
 - [ ] New features have usage examples
 
 ## Release Process
