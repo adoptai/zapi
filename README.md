@@ -46,6 +46,7 @@ ZAPI by Adopt AI is an open-source Python library that automatically captures ne
 - [Security & BYOK](#security--byok)
 - [Enhanced Discovery Workflow](#enhanced-discovery-workflow)
 - [Troubleshooting & Tips](#troubleshooting--tips)
+- [Contributing](#contributing)
 
 ## Requirements & Installation
 
@@ -78,25 +79,25 @@ Use this as a map when extending ZAPI or debugging the flow.
 
 ## Environment Setup
 
-1. Sign up at [app.adopt.ai](https://app.adopt.ai) to obtain your `ADOPT_CLIENT_ID`, `ADOPT_SECRET_KEY`, and BYOK token credentials before running ZAPI.
-2. Copy the example environment file and add your secrets:
+1.  Sign up at [app.adopt.ai](https://app.adopt.ai) to obtain your `ADOPT_CLIENT_ID`, `ADOPT_SECRET_KEY`, and BYOK token credentials before running ZAPI.
+2.  Copy the example environment file and add your secrets:
 
-```bash
-cp .env.example .env
-```
+    ```bash
+    cp .env.example .env
+    ```
 
-2. **Set up your environment:**
-   - Create a `.env` file in the root of the project.
-   - Populate it with the required variables:
-     ```env
-     # Required environment variables
-     LLM_API_KEY=your_llm_api_key_here
-     LLM_PROVIDER=anthropic                    # anthropic, openai, google, groq
-     LLM_MODEL_NAME=claude-3-5-sonnet-20241022 # model name for your provider
-     ADOPT_CLIENT_ID=your_client_id_here       # Get from app.adopt.ai
-     ADOPT_SECRET_KEY=your_secret_key_here     # Get from app.adopt.ai
-     YOUR_API_URL=your_api_url_here            # Custom API URL
-     ```
+3.  **Set up your environment:**
+    *   Create a `.env` file in the root of the project.
+    *   Populate it with the required variables:
+        ```env
+        # Required environment variables
+        LLM_API_KEY=your_llm_api_key_here
+        LLM_PROVIDER=anthropic                    # anthropic, openai, google, groq
+        LLM_MODEL_NAME=claude-3-5-sonnet-20241022 # model name for your provider
+        ADOPT_CLIENT_ID=your_client_id_here       # Get from app.adopt.ai
+        ADOPT_SECRET_KEY=your_secret_key_here     # Get from app.adopt.ai
+        YOUR_API_URL=your_api_url_here            # Custom API URL
+        ```
 
 Use `load_llm_credentials()` (provided in the library) to load secrets safely when building custom tooling.
 
@@ -359,3 +360,20 @@ session.close()
 - Always rerun `playwright install` after upgrading browsers or moving to a new machine.
 - Use `get_documented_apis()` to verify connectivity with the Adopt AI backend before launching long capture sessions.
 - Keep `.env` out of version control and rotate your BYOK tokens regularly through [app.adopt.ai](https://app.adopt.ai).
+
+## Contributing
+
+We welcome contributions from the community! Whether you're fixing bugs, adding features, improving documentation, or adding support for new LLM providers, your help is appreciated.
+
+**Get Started:**
+- Read our [Contributing Guide](CONTRIBUTING.md) for development setup, coding standards, and pull request guidelines
+- Check out [open issues](https://github.com/adoptai/zapi/issues) for tasks to work on
+- Join discussions on [GitHub Discussions](https://github.com/adoptai/zapi/discussions)
+
+**Quick Links:**
+- [Development Setup](CONTRIBUTING.md#development-setup)
+- [Project Structure](CONTRIBUTING.md#project-structure)
+- [Adding New LLM Providers](CONTRIBUTING.md#adding-new-llm-providers)
+- [Pull Request Process](CONTRIBUTING.md#pull-request-process)
+
+By contributing to ZAPI, you agree that your contributions will be licensed under the MIT License.
