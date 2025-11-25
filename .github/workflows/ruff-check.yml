@@ -1,0 +1,47 @@
+name: Ruff Linting
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+    paths:
+      - '**.py'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/ruff-check.yml'
+  push:
+    branches:
+      - main
+      - dev
+    paths:
+      - '**.py'
+      - 'pyproject.toml'
+      - 'requirements.txt'
+      - '.github/workflows/ruff-check.yml'
+
+jobs:
+  ruff-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ruff
+        run: |
+          pip install ruff
+
+      - name: Run Ruff Linter
+        run: |
+          ruff check . --output-format=github
+
+      - name: Run Ruff Formatter Check
+        run: |
+          ruff format --check .
+

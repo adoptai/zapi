@@ -6,15 +6,15 @@ from typing import Optional
 
 from zapi import (
     ZAPI,
-    analyze_har_file,
-    ZAPIError,
-    ZAPIAuthenticationError,
-    ZAPIValidationError,
-    ZAPINetworkError,
-    BrowserSessionError,
-    BrowserNavigationError,
     BrowserInitializationError,
+    BrowserNavigationError,
+    BrowserSessionError,
     HarProcessingError,
+    ZAPIAuthenticationError,
+    ZAPIError,
+    ZAPINetworkError,
+    ZAPIValidationError,
+    analyze_har_file,
 )
 
 # ---------------------------------------------------------------------------
@@ -178,6 +178,7 @@ def main() -> int:
         return 1
 
     return 0
+
 
 if __name__ == "__main__":
     exit(main())
