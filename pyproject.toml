@@ -42,3 +42,64 @@ Repository = "https://github.com/adoptai/zapi"
 where = ["."]
 include = ["zapi*"]
 
+[tool.ruff]
+# Set the maximum line length
+line-length = 120
+
+# Target Python 3.9+
+target-version = "py39"
+
+# Exclude common directories
+exclude = [
+    ".git",
+    ".github",
+    ".venv",
+    "venv",
+    "__pycache__",
+    "*.egg-info",
+    "build",
+    "dist",
+    "docs",
+    ".pytest_cache",
+    ".ruff_cache",
+]
+
+[tool.ruff.lint]
+# Enable specific rule sets
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+# Ignore specific rules
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+    "B008",  # Do not perform function calls in argument defaults
+    "B905",  # zip() without an explicit strict= parameter
+    "B904",  # Within except clause, raise with from err - too strict for this codebase
+    "SIM105",  # Use contextlib.suppress() instead of try-except-pass - we prefer explicit try-except for clarity
+]
+
+# Allow autofix for all enabled rules
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Indent with spaces
+indent-style = "space"
+
+# Use Unix-style line endings
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+known-first-party = ["zapi"]

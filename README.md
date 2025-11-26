@@ -46,6 +46,7 @@ ZAPI by Adopt AI is an open-source Python library that automatically captures ne
 - [Security & BYOK](#security--byok)
 - [Enhanced Discovery Workflow](#enhanced-discovery-workflow)
 - [Troubleshooting & Tips](#troubleshooting--tips)
+- [Contributing](#contributing)
 
 ## Requirements & Installation
 
@@ -359,3 +360,20 @@ session.close()
 - Always rerun `playwright install` after upgrading browsers or moving to a new machine.
 - Use `get_documented_apis()` to verify connectivity with the Adopt AI backend before launching long capture sessions.
 - Keep `.env` out of version control and rotate your BYOK tokens regularly through [app.adopt.ai](https://app.adopt.ai).
+
+## Contributing
+
+We welcome contributions from the community! Whether you're fixing bugs, adding features, improving documentation, or adding support for new LLM providers, your help is appreciated.
+
+**Get Started:**
+- Read our [Contributing Guide](CONTRIBUTING.md) for development setup, coding standards, and pull request guidelines
+- Check out [open issues](https://github.com/adoptai/zapi/issues) for tasks to work on
+- Join discussions on [GitHub Discussions](https://github.com/adoptai/zapi/discussions)
+
+**Quick Links:**
+- [Development Setup](CONTRIBUTING.md#development-setup)
+- [Project Structure](CONTRIBUTING.md#project-structure)
+- [Adding New LLM Providers](CONTRIBUTING.md#adding-new-llm-providers)
+- [Pull Request Process](CONTRIBUTING.md#pull-request-process)
+
+By contributing to ZAPI, you agree that your contributions will be licensed under the MIT License.

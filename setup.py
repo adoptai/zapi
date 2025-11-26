@@ -3,9 +3,9 @@ Setup script for ZAPI - maintained for backwards compatibility.
 Prefer using pyproject.toml for modern Python packaging.
 """
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-with open("README.md", "r", encoding="utf-8") as fh:
+with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
@@ -33,4 +33,3 @@ setup(
     ],
     keywords="api llm automation browser network har",
 )
-

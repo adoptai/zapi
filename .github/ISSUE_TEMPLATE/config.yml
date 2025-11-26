@@ -1,0 +1,15 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/adoptai/zapi/blob/main/README.md
+    about: Read the full documentation and usage guides
+  - name: 💬 GitHub Discussions
+    url: https://github.com/adoptai/zapi/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🌐 Adopt AI Website
+    url: https://www.adopt.ai
+    about: Visit the Adopt AI website for more information
+  - name: 🐦 Follow us on X (Twitter)
+    url: https://twitter.com/getadoptai
+    about: Stay updated with the latest news and announcements
+
