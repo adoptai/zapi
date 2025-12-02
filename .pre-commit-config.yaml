@@ -1,0 +1,43 @@
+# Pre-commit hooks for ZAPI
+# See https://pre-commit.com for more information
+
+repos:
+  # Ruff - Fast Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [--fix]
+        types_or: [python, pyi]
+      # Run the formatter
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Additional useful hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      # Prevent committing large files
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      # Check for files that would conflict in case-insensitive filesystems
+      - id: check-case-conflict
+      # Check for merge conflicts
+      - id: check-merge-conflict
+      # Check YAML files
+      - id: check-yaml
+        exclude: ^\.github/workflows/
+      # Check TOML files
+      - id: check-toml
+      # Check JSON files
+      - id: check-json
+      # Trim trailing whitespace
+      - id: trailing-whitespace
+        exclude: ^\.github/
+      # Ensure files end with newline
+      - id: end-of-file-fixer
+        exclude: ^\.github/
+      # Prevent committing to main/master
+      - id: no-commit-to-branch
+        args: ['--branch', 'main', '--branch', 'master']

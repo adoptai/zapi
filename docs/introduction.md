@@ -33,7 +33,7 @@ playwright install
 ### 1. Get Your API Credentials
 
 ZAPI uses OAuth authentication with the adopt.ai platform and supports LLM integration. You'll need:
-- A `client_id` 
+- A `client_id`
 - A `secret` key
 - An LLM `provider` (anthropic, openai, google, or groq)
 - An LLM `api_key` for your chosen provider
@@ -53,7 +53,7 @@ from zapi import ZAPI
 
 # Initialize with client credentials and LLM configuration
 z = ZAPI(
-    client_id="YOUR_CLIENT_ID", 
+    client_id="YOUR_CLIENT_ID",
     secret="YOUR_SECRET",
     llm_provider="anthropic",
     llm_api_key="sk-ant-YOUR_API_KEY",
@@ -111,7 +111,7 @@ All LLM API keys are encrypted before being used for tool ingestion:
 # Keys are automatically encrypted when ZAPI is initialized
 z = ZAPI(
     client_id="YOUR_CLIENT_ID",
-    secret="YOUR_SECRET", 
+    secret="YOUR_SECRET",
     llm_provider="anthropic",
     llm_api_key="sk-ant-your-key",  # Encrypted automatically
     llm_model_name="claude-3-5-sonnet-20241022"
@@ -131,7 +131,7 @@ Once you've captured traffic, upload it to the adopt.ai platform for automatic A
 
 ```python
 z = ZAPI(
-    client_id="YOUR_CLIENT_ID", 
+    client_id="YOUR_CLIENT_ID",
     secret="YOUR_SECRET",
     llm_provider="anthropic",
     llm_api_key="sk-ant-YOUR_API_KEY",
@@ -149,7 +149,7 @@ z.upload_har("session.har")
 
 The adopt.ai platform will:
 - Parse all API calls from your HAR file
-- Generate documentation automatically 
+- Generate documentation automatically
 - Use your encrypted LLM key for enhanced processing
 - Make APIs available for LLM agents and tools
 
@@ -163,27 +163,27 @@ from zapi import analyze_har_file, HarProcessingError
 try:
     # Analyze HAR file with detailed statistics
     stats, report, filtered_file = analyze_har_file(
-        "session.har", 
+        "session.har",
         save_filtered=True,           # Save filtered version with only API entries
         filtered_output_path="api_only.har"  # Optional custom path
     )
-    
+
     # Access detailed statistics
     print(f"Total entries: {stats.total_entries:,}")
     print(f"API-relevant entries: {stats.valid_entries:,}")
     print(f"Unique domains: {stats.unique_domains:,}")
     print(f"Estimated cost: ${stats.estimated_cost_usd:.2f}")
     print(f"Estimated time: {stats.estimated_time_minutes:.1f} minutes")
-    
+
     # Show which entries were filtered out and why
     print("\nSkipped entries by reason:")
     for reason, count in stats.skipped_by_reason.items():
         if count > 0:
             print(f"  {reason.replace('_', ' ').title()}: {count:,}")
-    
+
     # Print full formatted report
     print("\n" + report)
-    
+
 except HarProcessingError as e:
     print(f"HAR analysis failed: {e}")
 ```
@@ -202,7 +202,7 @@ After uploading, retrieve your documented APIs programmatically:
 
 ```python
 z = ZAPI(
-    client_id="YOUR_CLIENT_ID", 
+    client_id="YOUR_CLIENT_ID",
     secret="YOUR_SECRET",
     llm_provider="groq",
     llm_api_key="gsk_YOUR_GROQ_KEY",
@@ -226,7 +226,7 @@ When developing or debugging, run with a visible browser:
 ```python
 # See the browser in action
 session = z.launch_browser(
-    url="https://app.example.com", 
+    url="https://app.example.com",
     headless=False  # Makes browser visible
 )
 
@@ -312,7 +312,7 @@ llm_provider, llm_api_key, llm_model_name = load_llm_credentials()
 # Initialize ZAPI
 z = ZAPI(
     client_id="YOUR_CLIENT_ID",
-    secret="YOUR_SECRET", 
+    secret="YOUR_SECRET",
     llm_provider=llm_provider,
     llm_api_key=llm_api_key,
     llm_model_name=llm_model_name
@@ -471,4 +471,3 @@ Join the community and contribute:
 * **GitHub**: https://github.com/adoptai/zapi
 * **adopt.ai Platform**: https://app.adopt.ai
 * **License**: MIT
-

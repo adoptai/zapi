@@ -1,7 +1,7 @@
 """LLM Provider enums and validation utilities.
 
 ZAPI supports a generic key-value approach for LLM API keys, allowing developers
-to bring their own keys for any provider. We support 4 main providers with 
+to bring their own keys for any provider. We support 4 main providers with
 full validation and optimized integration.
 
 Currently supported providers:
@@ -9,36 +9,36 @@ Currently supported providers:
 """
 
 from enum import Enum
-from typing import Dict, Set
 
-from .exceptions import LLMKeyException
+from .exceptions import LLMKeyError
 
 
 class LLMProvider(Enum):
     """
     Supported LLM providers for API key management.
-    
+
     ZAPI supports 4 main LLM providers with optimized integration and validation.
     Each provider has specific API key format validation.
     """
+
     # Main supported providers
     ANTHROPIC = "anthropic"
     OPENAI = "openai"
-    GOOGLE = "google" 
+    GOOGLE = "google"
     GROQ = "groq"
-    
+
     @classmethod
-    def get_all_providers(cls) -> Set[str]:
+    def get_all_providers(cls) -> set[str]:
         """Get all supported provider names."""
         return {provider.value for provider in cls}
-    
+
     @classmethod
     def is_valid_provider(cls, provider: str) -> bool:
         """Check if a provider name is valid."""
         return provider.lower() in cls.get_all_providers()
 
 
-def validate_llm_keys(llm_keys: Dict[str, str]) -> Dict[str, str]:
+def validate_llm_keys(llm_keys: dict[str, str]) -> dict[str, str]:
     """
     Validate LLM keys dictionary for supported providers.
 
@@ -52,13 +52,13 @@ def validate_llm_keys(llm_keys: Dict[str, str]) -> Dict[str, str]:
         Validated and normalized keys dictionary
 
     Raises:
-        LLMKeyException: If keys format is invalid or providers are unsupported
+        LLMKeyError: If keys format is invalid or providers are unsupported
     """
     if not isinstance(llm_keys, dict):
-        raise LLMKeyException("llm_keys must be a dictionary")
+        raise LLMKeyError("llm_keys must be a dictionary")
 
     if not llm_keys:
-        raise LLMKeyException("llm_keys cannot be empty")
+        raise LLMKeyError("llm_keys cannot be empty")
 
     validated_keys = {}
 
@@ -70,14 +70,11 @@ def validate_llm_keys(llm_keys: Dict[str, str]) -> Dict[str, str]:
 
         # Validate provider is supported
         if not LLMProvider.is_valid_provider(provider_normalized):
-            raise LLMKeyException(
-                f"Unsupported LLM provider: '{provider}'. "
-                f"Supported providers: {supported_providers}"
-            )
+            raise LLMKeyError(f"Unsupported LLM provider: '{provider}'. Supported providers: {supported_providers}")
 
         # Validate API key format
         if not isinstance(api_key, str) or not api_key.strip():
-            raise LLMKeyException(f"API key for provider '{provider}' must be a non-empty string")
+            raise LLMKeyError(f"API key for provider '{provider}' must be a non-empty string")
 
         _validate_key_format(provider_normalized, api_key.strip())
 
@@ -97,50 +94,50 @@ def _validate_key_format(provider: str, api_key: str) -> None:
         api_key: API key to validate
 
     Raises:
-        LLMKeyException: If key format is invalid for the provider
+        LLMKeyError: If key format is invalid for the provider
     """
     # Main supported providers - specific validation for each
     if provider == LLMProvider.ANTHROPIC.value:
         if not api_key.startswith("sk-ant-"):
-            raise LLMKeyException("Anthropic API keys must start with 'sk-ant-'")
+            raise LLMKeyError("Anthropic API keys must start with 'sk-ant-'")
         if len(api_key) < 20:
-            raise LLMKeyException("Anthropic API keys must be at least 20 characters long")
+            raise LLMKeyError("Anthropic API keys must be at least 20 characters long")
 
     elif provider == LLMProvider.OPENAI.value:
         if not api_key.startswith("sk-"):
-            raise LLMKeyException("OpenAI API keys must start with 'sk-'")
+            raise LLMKeyError("OpenAI API keys must start with 'sk-'")
         if len(api_key) < 20:
-            raise LLMKeyException("OpenAI API keys must be at least 20 characters long")
+            raise LLMKeyError("OpenAI API keys must be at least 20 characters long")
 
     elif provider == LLMProvider.GOOGLE.value:
         # Google API keys are typically 39 characters and alphanumeric + hyphens
         if len(api_key) < 20:
-            raise LLMKeyException("Google API keys must be at least 20 characters long")
+            raise LLMKeyError("Google API keys must be at least 20 characters long")
 
     elif provider == LLMProvider.GROQ.value:
         if not api_key.startswith("gsk_"):
-            raise LLMKeyException("Groq API keys must start with 'gsk_'")
+            raise LLMKeyError("Groq API keys must start with 'gsk_'")
         if len(api_key) < 20:
-            raise LLMKeyException("Groq API keys must be at least 20 characters long")
+            raise LLMKeyError("Groq API keys must be at least 20 characters long")
 
     # Generic validation for all providers
     if len(api_key) < 10:
-        raise LLMKeyException(f"API key for {provider} is too short (minimum 10 characters)")
+        raise LLMKeyError(f"API key for {provider} is too short (minimum 10 characters)")
 
     # Additional validation: ensure key contains only valid characters
     if not api_key.replace("-", "").replace("_", "").replace(".", "").isalnum():
-        raise LLMKeyException(f"API key for {provider} contains invalid characters")
+        raise LLMKeyError(f"API key for {provider} contains invalid characters")
 
 
 def get_provider_display_name(provider: str) -> str:
     """
     Get human-readable display name for provider.
-    
+
     Returns display names for the 4 main supported providers.
-    
+
     Args:
         provider: Provider name (normalized)
-        
+
     Returns:
         Display name for the provider
     """
@@ -157,20 +154,20 @@ def get_provider_display_name(provider: str) -> str:
 def is_primary_provider(provider: str) -> bool:
     """
     Check if provider is the primary supported provider.
-    
+
     Args:
         provider: Provider name (normalized)
-        
+
     Returns:
         True if provider is primary supported (Anthropic), False otherwise
     """
     return provider.lower() == LLMProvider.ANTHROPIC.value
 
 
-def get_supported_providers_info() -> Dict[str, Dict[str, str]]:
+def get_supported_providers_info() -> dict[str, dict[str, str]]:
     """
     Get information about the 4 main supported providers.
-    
+
     Returns:
         Dictionary with provider info including support level
     """
@@ -178,21 +175,21 @@ def get_supported_providers_info() -> Dict[str, Dict[str, str]]:
         "anthropic": {
             "display_name": "Anthropic",
             "support_level": "primary",
-            "description": "Primary supported provider with complete validation"
+            "description": "Primary supported provider with complete validation",
         },
         "openai": {
-            "display_name": "OpenAI", 
+            "display_name": "OpenAI",
             "support_level": "main",
-            "description": "Fully supported with complete validation"
+            "description": "Fully supported with complete validation",
         },
         "google": {
             "display_name": "Google",
-            "support_level": "main", 
-            "description": "Fully supported with complete validation"
+            "support_level": "main",
+            "description": "Fully supported with complete validation",
         },
         "groq": {
             "display_name": "Groq",
             "support_level": "main",
-            "description": "Fully supported with complete validation"
-        }
+            "description": "Fully supported with complete validation",
+        },
     }

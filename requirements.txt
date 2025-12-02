@@ -7,3 +7,7 @@ python-dotenv>=1.0.0
 langchain>=1.0.0
 langchain-anthropic>=1.0.0
 langchain-openai>=1.0.0
+
+# Development dependencies
+ruff>=0.6.0
+pre-commit>=3.0.0

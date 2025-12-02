@@ -57,7 +57,22 @@ Thank you for your interest in contributing to ZAPI! This document provides guid
    # Edit .env with your credentials from app.adopt.ai
    ```
 
-6. Test the installation:
+6. Install Ruff for linting and formatting:
+
+   ```bash
+   pip install ruff
+   ```
+
+7. Install pre-commit hooks (recommended):
+
+   ```bash
+   pip install pre-commit
+   pre-commit install
+   ```
+
+   This will automatically run Ruff checks before every commit.
+
+8. Test the installation:
 
    ```bash
    python demo.py
@@ -75,12 +90,90 @@ python examples/langchain/demo.py
 
 # Test HAR processing
 python -c "from zapi import analyze_har_file; analyze_har_file('demo_session.har')"
+```
 
-# Format code (if using black)
-black zapi/ examples/ demo.py
+### Code Quality Tools
 
-# Lint code (if using pylint)
-pylint zapi/
+ZAPI uses [Ruff](https://docs.astral.sh/ruff/) for fast linting and formatting. All PRs are automatically checked via GitHub Actions.
+
+**Run linting checks:**
+
+```bash
+# Check for linting issues
+ruff check .
+
+# Auto-fix linting issues
+ruff check . --fix
+```
+
+**Run formatting checks:**
+
+```bash
+# Check if code is formatted correctly
+ruff format --check .
+
+# Format code automatically
+ruff format .
+```
+
+**Before submitting a PR:**
+
+```bash
+# Option 1: Run pre-commit hooks manually
+pre-commit run --all-files
+
+# Option 2: Run Ruff directly
+ruff check .
+ruff format --check .
+
+# Option 3: Use the pre-commit script
+./scripts/pre-commit.sh
+
+# Or fix everything automatically
+ruff check . --fix
+ruff format .
+```
+
+**Configuration:**
+
+Ruff settings are defined in `pyproject.toml`. Key settings:
+- Line length: 120 characters
+- Target: Python 3.9+
+- Enabled rules: pycodestyle, pyflakes, isort, pep8-naming, pyupgrade, flake8-bugbear, and more
+
+### Pre-commit Hooks
+
+ZAPI uses [pre-commit](https://pre-commit.com/) to automatically run checks before commits:
+
+**Setup (one-time):**
+```bash
+pip install pre-commit
+pre-commit install
+```
+
+**What it does:**
+- ✅ Runs Ruff linter with auto-fix
+- ✅ Runs Ruff formatter
+- ✅ Checks for large files (>1MB)
+- ✅ Checks YAML, TOML, JSON syntax
+- ✅ Trims trailing whitespace
+- ✅ Prevents commits to main/master
+
+**Manual run:**
+```bash
+# Run on all files
+pre-commit run --all-files
+
+# Run on staged files only
+pre-commit run
+
+# Use the standalone script
+./scripts/pre-commit.sh
+```
+
+**Skip hooks (not recommended):**
+```bash
+git commit --no-verify
 ```
 
 ## Project Structure
@@ -172,22 +265,22 @@ def analyze_har_file(
 ) -> Tuple[HarStats, str, Optional[str]]:
     """
     Analyze a HAR file and generate statistics.
-    
+
     This function loads a HAR file, filters out static assets,
     and provides cost/time estimates for API discovery processing.
-    
+
     Args:
         har_file_path: Path to the HAR file to analyze
         save_filtered: Whether to save filtered HAR with only API entries
         filtered_output_path: Custom path for filtered HAR (optional)
-    
+
     Returns:
         Tuple of (statistics, formatted_report, filtered_file_path)
-    
+
     Raises:
         HarProcessingError: If HAR file is invalid or cannot be processed
         FileNotFoundError: If HAR file does not exist
-    
+
     Example:
         >>> stats, report, filtered = analyze_har_file("session.har", save_filtered=True)
         >>> print(f"API entries: {stats.valid_entries}")
@@ -315,8 +408,10 @@ When creating example scripts:
 - Write clear commit messages
 - Include tests if applicable
 - Update documentation
-- Ensure code passes linting
+- **Ensure code passes Ruff checks** (`ruff check .` and `ruff format --check .`)
 - Respond to review comments promptly
+
+**Note:** All PRs are automatically checked by GitHub Actions for code quality using Ruff. Make sure to run the checks locally before submitting to avoid CI failures.
 
 ## Adding New LLM Providers
 
@@ -373,7 +468,7 @@ To add support for a new LLM provider:
    ```bash
    # Test HAR analysis
    python -c "from zapi import analyze_har_file; print(analyze_har_file('demo_session.har'))"
-   
+
    # Test LangChain integration
    python examples/langchain/demo.py
    ```
@@ -393,7 +488,8 @@ Before submitting a PR, verify:
 - [ ] Error messages are clear and helpful
 - [ ] Documentation is updated
 - [ ] No sensitive data in code or commits
-- [ ] Code follows style guidelines
+- [ ] **Code passes Ruff linting** (`ruff check .`)
+- [ ] **Code is properly formatted** (`ruff format --check .`)
 - [ ] New features have usage examples
 
 ## Release Process
@@ -451,4 +547,3 @@ See [LICENSE](LICENSE) file for full license text.
 ---
 
 Thank you for contributing to ZAPI! Your contributions help make API discovery and LLM integration easier for everyone. 🚀
-

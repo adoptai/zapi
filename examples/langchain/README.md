@@ -15,7 +15,7 @@ z = ZAPI()
 
 # Get ZAPI tools automatically
 agent = create_agent(
-    z.get_llm_model_name(), 
+    z.get_llm_model_name(),
     z.get_zapi_tools(),  # Simple one-liner to get all tools
     system_prompt="You are a helpful assistant with access to APIs."
 )

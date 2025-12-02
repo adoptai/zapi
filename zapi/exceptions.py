@@ -1,21 +1,31 @@
 """Custom exception classes for ZAPI."""
 
 
-class ZapiException(Exception):
-    """Base exception for all ZAPI errors."""
+class ZAPIError(Exception):
+    """Base exception class for ZAPI errors."""
+
     pass
 
 
-class AuthException(ZapiException):
-    """Raised for authentication-related errors."""
+class ZAPIAuthenticationError(ZAPIError):
+    """Authentication-related errors."""
+
     pass
 
 
-class LLMKeyException(ZapiException):
-    """Raised for LLM key-related errors."""
+class ZAPIValidationError(ZAPIError):
+    """Input validation errors."""
+
     pass
 
 
-class NetworkException(ZapiException):
-    """Raised for network-related errors."""
+class ZAPINetworkError(ZAPIError):
+    """Network-related errors."""
+
     pass
+
+
+# Internal aliases for consistency
+AuthError = ZAPIAuthenticationError
+NetworkError = ZAPINetworkError
+LLMKeyError = ZAPIValidationError
