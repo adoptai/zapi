@@ -1,9 +1,7 @@
 <h3 align="center">
   <a name="readme-top"></a>
   <img
-    src="https://asset.adopt.ai/web/images/logo.png"
-    height="200"
-  >
+    src="https://asset.adopt.ai/web/icons/github_banner.png">
 </h3>
 <div align="center">
 <a href="https://GitHub.com/adoptai/zapi/graphs/contributors">
