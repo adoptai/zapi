@@ -32,14 +32,20 @@ dependencies = [
     "langchain>=1.0.0",
     "langchain-anthropic>=1.0.0",
     "langchain-openai>=1.0.0",
+    "click>=8.0.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/adoptai/zapi"
 Repository = "https://github.com/adoptai/zapi"
 
+[project.scripts]
+zapi = "zapi.cli:cli"
+
 [tool.setuptools.packages.find]
 where = ["."]
+
+
 include = ["zapi*"]
 
 [tool.ruff]
