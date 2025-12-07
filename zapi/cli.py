@@ -1,7 +1,7 @@
 """Command-line interface for ZAPI."""
 
-from pathlib import Path
 import time
+from pathlib import Path
 
 import click
 
