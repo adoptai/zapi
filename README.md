@@ -1,9 +1,7 @@
 <h3 align="center">
   <a name="readme-top"></a>
   <img
-    src="https://asset.adopt.ai/web/images/logo.png"
-    height="200"
-  >
+    src="https://asset.adopt.ai/web/icons/github_banner.png">
 </h3>
 <div align="center">
 <a href="https://GitHub.com/adoptai/zapi/graphs/contributors">
@@ -86,17 +84,18 @@ Use this as a map when extending ZAPI or debugging the flow.
 cp .env.example .env
 ```
 
-3. Populate `.env` with the required variables:
-
-```bash
-# Required environment variables
-LLM_PROVIDER_API_KEY=your_llm_api_key_here
-LLM_PROVIDER=anthropic                    # anthropic, openai, google, groq
-LLM_MODEL_NAME=claude-3-5-sonnet-20241022 # model name for your provider
-ADOPT_CLIENT_ID=your_client_id_here       # Get from app.adopt.ai
-ADOPT_SECRET_KEY=your_secret_key_here     # Get from app.adopt.ai
-YOUR_API_URL=your_api_url_here            # Custom API URL
-```
+2. **Set up your environment:**
+   - Create a `.env` file in the root of the project.
+   - Populate it with the required variables:
+     ```env
+     # Required environment variables
+     LLM_API_KEY=your_llm_api_key_here
+     LLM_PROVIDER=anthropic                    # anthropic, openai, google, groq
+     LLM_MODEL_NAME=claude-3-5-sonnet-20241022 # model name for your provider
+     ADOPT_CLIENT_ID=your_client_id_here       # Get from app.adopt.ai
+     ADOPT_SECRET_KEY=your_secret_key_here     # Get from app.adopt.ai
+     YOUR_API_URL=your_api_url_here            # Custom API URL
+     ```
 
 Use `load_llm_credentials()` (provided in the library) to load secrets safely when building custom tooling.
 
