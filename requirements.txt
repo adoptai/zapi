@@ -8,6 +8,8 @@ langchain>=1.0.0
 langchain-anthropic>=1.0.0
 langchain-openai>=1.0.0
 click>=8.0.0
+networkx>=3.0
+pyvis>=0.3.0
 
 # Development dependencies
 ruff>=0.6.0

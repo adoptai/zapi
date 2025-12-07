@@ -6,6 +6,7 @@ from pathlib import Path
 import click
 
 from .core import ZAPI
+from .graph import create_graph_from_har
 from .har_processing import analyze_har_file
 
 
@@ -68,6 +69,20 @@ def upload(har_file):
     click.echo(f"☁️ Uploading HAR file: {har_file}")
     zapi_client.upload_har(har_file)
     click.echo("✅ HAR file uploaded successfully!")
+
+
+@cli.command()
+@click.argument('har_file', type=click.Path(exists=True))
+@click.option('--output', default='session_graph.html', help='Output HTML graph file path.')
+def graph(har_file, output):
+    """Visualize a HAR session as an interactive graph."""
+    click.echo(f"📊 Generating graph from: {har_file}")
+    try:
+        output_path = create_graph_from_har(har_file, output)
+        click.echo(f"✅ Graph visualization saved to: {output_path}")
+    except Exception as e:
+        click.echo(f"❌ Failed to generate graph: {str(e)}")
+
 
 
 if __name__ == "__main__":
