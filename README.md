@@ -81,7 +81,7 @@ Use this as a map when extending ZAPI or debugging the flow.
 2. Copy the example environment file and add your secrets:
 
 ```bash
-cp .env.example .env
+cp .devenv .env
 ```
 
 2. **Set up your environment:**
