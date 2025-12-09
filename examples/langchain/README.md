@@ -107,7 +107,7 @@ z = ZAPI()
 
 # 2. Create agent with ZAPI tools
 agent = create_agent(
-    z.get_llm_model_name(),      # Gets the LLM model (e.g., "claude-3-5-sonnet-20241022")
+    z.get_llm_model_name(),      # Gets the LLM model (use the latest available model for your provider)
     z.get_zapi_tools(),           # Gets all your documented APIs as tools
     system_prompt="You are a helpful assistant with access to APIs."
 )

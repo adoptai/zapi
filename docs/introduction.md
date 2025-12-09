@@ -37,7 +37,7 @@ ZAPI uses OAuth authentication with the adopt.ai platform and supports LLM integ
 - A `secret` key
 - An LLM `provider` (anthropic, openai, google, or groq)
 - An LLM `api_key` for your chosen provider
-- An LLM `model_name` (e.g., "claude-3-5-sonnet-20241022")
+- An LLM `model_name` (use the latest available model for your provider - check your provider's documentation for current model names)
 
 **Getting your client_id and secret:**
 Sign up at [app.adopt.ai](https://app.adopt.ai) to get your OAuth credentials.
@@ -57,7 +57,7 @@ z = ZAPI(
     secret="YOUR_SECRET",
     llm_provider="anthropic",
     llm_api_key="sk-ant-YOUR_API_KEY",
-    llm_model_name="claude-3-5-sonnet-20241022"
+    llm_model_name="your-model-name"  # Use the latest available model for your provider
 )
 
 # Launch browser and capture traffic
@@ -83,7 +83,7 @@ You can also load credentials from a `.env` file:
 # Create .env file with your credentials
 echo "LLM_PROVIDER=anthropic" >> .env
 echo "LLM_API_KEY=sk-ant-your-key-here" >> .env
-echo "LLM_MODEL_NAME=claude-3-5-sonnet-20241022" >> .env
+echo "LLM_MODEL_NAME=your-model-name" >> .env  # Use the latest available model for your provider
 ```
 
 Run the demo script to verify everything works:
@@ -114,7 +114,7 @@ z = ZAPI(
     secret="YOUR_SECRET",
     llm_provider="anthropic",
     llm_api_key="sk-ant-your-key",  # Encrypted automatically
-    llm_model_name="claude-3-5-sonnet-20241022"
+    llm_model_name="your-model-name"  # Use the latest available model for your provider
 )
 
 # Check if LLM key is configured
@@ -135,7 +135,7 @@ z = ZAPI(
     secret="YOUR_SECRET",
     llm_provider="anthropic",
     llm_api_key="sk-ant-YOUR_API_KEY",
-    llm_model_name="claude-3-5-sonnet-20241022"
+    llm_model_name="your-model-name"  # Use the latest available model for your provider
 )
 
 # Capture traffic
@@ -344,7 +344,7 @@ if input("Upload? (y/n): ").lower() == 'y':
 - `client_id` (str): OAuth client ID for authentication
 - `secret` (str): OAuth secret key
 - `llm_provider` (str): LLM provider name ("anthropic", "openai", "google", "groq")
-- `llm_model_name` (str): LLM model name (e.g., "claude-3-5-sonnet-20241022")
+- `llm_model_name` (str): LLM model name. Use the latest available model for your provider (check your provider's documentation for current model names)
 - `llm_api_key` (str): LLM API key for the specified provider
 - Raises `ZAPIValidationError` if credentials are empty or LLM key format is invalid
 - Raises `ZAPIAuthenticationError` if authentication fails
@@ -461,7 +461,7 @@ playwright install
 # Set up your .env file with credentials
 echo "LLM_PROVIDER=anthropic" >> .env
 echo "LLM_API_KEY=sk-ant-your-key" >> .env
-echo "LLM_MODEL_NAME=claude-3-5-sonnet-20241022" >> .env
+echo "LLM_MODEL_NAME=your-model-name" >> .env  # Use the latest available model for your provider
 
 python demo.py
 ```
