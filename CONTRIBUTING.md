@@ -53,7 +53,7 @@ Thank you for your interest in contributing to ZAPI! This document provides guid
 5. Set up your environment variables:
 
    ```bash
-   cp .env.example .env
+   cp .devenv .env
    # Edit .env with your credentials from app.adopt.ai
    ```
 
