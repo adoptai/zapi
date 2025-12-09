@@ -81,20 +81,21 @@ Use this as a map when extending ZAPI or debugging the flow.
 2. Copy the example environment file and add your secrets:
 
 ```bash
-cp .env.example .env
+cp .devenv .env
 ```
 
-3. Populate `.env` with the required variables:
-
-```bash
-# Required environment variables
-LLM_PROVIDER_API_KEY=your_llm_api_key_here
-LLM_PROVIDER=anthropic                    # anthropic, openai, google, groq
-LLM_MODEL_NAME=claude-3-5-sonnet-20241022 # model name for your provider
-ADOPT_CLIENT_ID=your_client_id_here       # Get from app.adopt.ai
-ADOPT_SECRET_KEY=your_secret_key_here     # Get from app.adopt.ai
-YOUR_API_URL=your_api_url_here            # Custom API URL
-```
+2. **Set up your environment:**
+   - Create a `.env` file in the root of the project.
+   - Populate it with the required variables:
+     ```env
+     # Required environment variables
+     LLM_API_KEY=your_llm_api_key_here
+     LLM_PROVIDER=anthropic                    # anthropic, openai, google, groq
+     LLM_MODEL_NAME=your_model_name_here      # Use the latest available model for your provider
+     ADOPT_CLIENT_ID=your_client_id_here       # Get from app.adopt.ai
+     ADOPT_SECRET_KEY=your_secret_key_here     # Get from app.adopt.ai
+     YOUR_API_URL=your_api_url_here            # Custom API URL
+     ```
 
 Use `load_llm_credentials()` (provided in the library) to load secrets safely when building custom tooling.
 
@@ -138,7 +139,7 @@ z = ZAPI()
 
 # Check configuration
 print(f"Provider: {z.get_llm_provider()}")        # 'anthropic'
-print(f"Model: {z.get_llm_model_name()}")         # 'claude-3-5-sonnet-20241022'
+print(f"Model: {z.get_llm_model_name()}")         # Your configured model name
 print(f"Has key: {z.has_llm_key()}")              # True
 
 # Update LLM configuration after initialization
@@ -157,7 +158,7 @@ try:
         client_id="invalid",
         secret="invalid",
         llm_provider="anthropic",
-        llm_model_name="claude-3-5-sonnet-20241022",
+        llm_model_name="your-model-name",  # Use the latest available model for your provider
         llm_api_key="invalid-key"
     )
 except ZAPIAuthenticationError as e:
@@ -285,7 +286,7 @@ ZAPI will load the file automatically, hide secret values in logs, and apply the
 
 - `client_id` / `secret`: OAuth credentials from Adopt AI.
 - `llm_provider`: `"groq"`, `"anthropic"`, `"openai"`, or `"google"`.
-- `llm_model_name`: Any model identifier your provider supports (e.g., `"claude-3-5-sonnet-20241022"`, `"gpt-4"`).
+- `llm_model_name`: Any model identifier your provider supports. Use the latest available model for your provider (e.g., check your provider's documentation for current model names).
 - `llm_api_key`: Provider-specific API key (encrypted immediately per organization context).
 
 Key methods:
