@@ -72,16 +72,34 @@ class ZAPI:
         self.secret = secret
 
         # Fetch auth token and extract org_id
-        self.auth_token, self.org_id, self.email = self._fetch_auth_token()
+        try:
+            self.auth_token, self.org_id, self.email = self._fetch_auth_token()
+        except (AuthError, NetworkError) as e:
+            print(f"⚠️  Warning: {str(e)}")
+            print("   Continuing in offline mode. Some features (like upload) will be unavailable.")
+            self.auth_token = None
+            self.org_id = None
+            self.email = None
 
         # Initialize encryption handler
-        self._key_encryptor = LLMKeyEncryption(self.org_id)
+        if self.org_id:
+            try:
+                self._key_encryptor = LLMKeyEncryption(self.org_id)
+            except Exception as e:
+                print(f"⚠️  Warning: Failed to initialize encryption: {e}")
+                self._key_encryptor = None
+        else:
+            self._key_encryptor = None
 
         # Validate and encrypt LLM key if provided
         self._encrypted_llm_key: str = ""
         self._llm_provider: str = llm_provider
         self._llm_model_name: str = llm_model_name
-        self.set_llm_key(llm_provider, llm_api_key, llm_model_name)
+        try:
+            self.set_llm_key(llm_provider, llm_api_key, llm_model_name)
+        except Exception as e:
+            print(f"⚠️  Warning: Failed to configure LLM keys: {e}")
+            print("   LLM features will be unavailable.")
 
         # Automatically set LLM API key in environment for LangChain compatibility
         if self._llm_provider and self._encrypted_llm_key:
@@ -398,6 +416,11 @@ class ZAPI:
             ZAPIAuthenticationError: If authentication fails
         """
         url = f"{BASE_URL}/v1/api-discovery/upload-file"
+
+        if not self.auth_token:
+            raise AuthError(
+                "Authentication required for upload. Please check your credentials and internet connection."
+            )
 
         headers = {"Authorization": f"Bearer {self.auth_token}"}
 

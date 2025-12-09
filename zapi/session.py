@@ -124,11 +124,12 @@ class BrowserSession:
                 raise BrowserInitializationError(f"Failed to create browser context: {str(e)}")
 
             # Apply header-based authentication (Bearer token)
-            try:
-                auth_handler = get_auth_handler("header")
-                await auth_handler(self._context, self.auth_token)
-            except Exception as e:
-                raise BrowserInitializationError(f"Failed to apply authentication: {str(e)}")
+            if self.auth_token:
+                try:
+                    auth_handler = get_auth_handler("header")
+                    await auth_handler(self._context, self.auth_token)
+                except Exception as e:
+                    raise BrowserInitializationError(f"Failed to apply authentication: {str(e)}")
 
             # Create page
             try:
