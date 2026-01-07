@@ -100,8 +100,20 @@ class BrowserSession:
 
             # Launch browser with enhanced error handling
             try:
+                # Add stealth args if not present
+                launch_options = self.playwright_options.copy()
+                args = launch_options.get("args", [])
+                if "--disable-blink-features=AutomationControlled" not in args:
+                    args.append("--disable-blink-features=AutomationControlled")
+                launch_options["args"] = args
+                
+                # Default to a more realistic viewport if not specified
+                if "viewport" not in launch_options:
+                     # None means resize to window size
+                     pass
+
                 self._browser = await self._playwright.chromium.launch(
-                    headless=self.headless, **self.playwright_options
+                    headless=self.headless, **launch_options
                 )
             except Exception as e:
                 raise BrowserInitializationError(
@@ -116,19 +128,47 @@ class BrowserSession:
 
             # Create context with HAR recording
             try:
+                # Use a realistic User-Agent
+                user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+                
                 self._context = await self._browser.new_context(
                     record_har_path=str(self._har_path),
                     record_har_mode="minimal",
+                    user_agent=user_agent,
+                    viewport={"width": 1280, "height": 720}, # Set a standard viewport
+                    device_scale_factor=2,
+                    locale="en-US",
+                    timezone_id="America/New_York",
                 )
+                
+                # Add stealth scripts to evade bot detection
+                await self._context.add_init_script("""
+                    Object.defineProperty(navigator, 'webdriver', {
+                        get: () => undefined
+                    });
+                    
+                    // Pass the Chrome Test
+                    window.navigator.chrome = {
+                        runtime: {},
+                    };
+                    
+                    // Pass the Plugins Length Test
+                    Object.defineProperty(navigator, 'plugins', {
+                        get: () => [1, 2, 3, 4, 5],
+                    });
+                    
+                    // Pass the Languages Test
+                    Object.defineProperty(navigator, 'languages', {
+                        get: () => ['en-US', 'en'],
+                    });
+                """)
             except Exception as e:
                 raise BrowserInitializationError(f"Failed to create browser context: {str(e)}")
 
-            # Apply header-based authentication (Bearer token)
-            try:
-                auth_handler = get_auth_handler("header")
-                await auth_handler(self._context, self.auth_token)
-            except Exception as e:
-                raise BrowserInitializationError(f"Failed to apply authentication: {str(e)}")
+                pass
+                # Original auth injection code removed to prevent CORS issues on public sites
+                # auth_handler = get_auth_handler("header")
+                # await auth_handler(self._context, self.auth_token)
 
             # Create page
             try:
