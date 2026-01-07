@@ -18,8 +18,6 @@ from playwright.async_api import (
     TimeoutError as PlaywrightTimeoutError,
 )
 
-from .auth import get_auth_handler
-
 
 def _run_async(coro):
     """Helper to run async coroutines synchronously."""
@@ -106,15 +104,13 @@ class BrowserSession:
                 if "--disable-blink-features=AutomationControlled" not in args:
                     args.append("--disable-blink-features=AutomationControlled")
                 launch_options["args"] = args
-                
+
                 # Default to a more realistic viewport if not specified
                 if "viewport" not in launch_options:
-                     # None means resize to window size
-                     pass
+                    # None means resize to window size
+                    pass
 
-                self._browser = await self._playwright.chromium.launch(
-                    headless=self.headless, **launch_options
-                )
+                self._browser = await self._playwright.chromium.launch(headless=self.headless, **launch_options)
             except Exception as e:
                 raise BrowserInitializationError(
                     f"Failed to launch browser: {str(e)}. "
@@ -130,33 +126,33 @@ class BrowserSession:
             try:
                 # Use a realistic User-Agent
                 user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
-                
+
                 self._context = await self._browser.new_context(
                     record_har_path=str(self._har_path),
                     record_har_mode="minimal",
                     user_agent=user_agent,
-                    viewport={"width": 1280, "height": 720}, # Set a standard viewport
+                    viewport={"width": 1280, "height": 720},  # Set a standard viewport
                     device_scale_factor=2,
                     locale="en-US",
                     timezone_id="America/New_York",
                 )
-                
+
                 # Add stealth scripts to evade bot detection
                 await self._context.add_init_script("""
                     Object.defineProperty(navigator, 'webdriver', {
                         get: () => undefined
                     });
-                    
+
                     // Pass the Chrome Test
                     window.navigator.chrome = {
                         runtime: {},
                     };
-                    
+
                     // Pass the Plugins Length Test
                     Object.defineProperty(navigator, 'plugins', {
                         get: () => [1, 2, 3, 4, 5],
                     });
-                    
+
                     // Pass the Languages Test
                     Object.defineProperty(navigator, 'languages', {
                         get: () => ['en-US', 'en'],
